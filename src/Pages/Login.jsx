@@ -22,7 +22,6 @@ const Login = () => {
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-
   const joyTheme = extendTheme();
 
   const handleShowPassword = () => {
@@ -43,6 +42,7 @@ const Login = () => {
       hasError = true;
     }
     if (!password.trim()) {
+      // setPasswordError("Password is required");
       setPasswordError("Password is required");
       hasError = true;
     }
@@ -64,7 +64,7 @@ const Login = () => {
         }
 
         const role = res.data.data.role;
-        console.log('User role:', role);
+        console.log("User role:", role);
 
         if (role === "Support_Admin") {
           window.location.href = "/users";
@@ -76,20 +76,17 @@ const Login = () => {
           setBranchData(id, branchName, organizationName);
           window.location.href = "/users";
         }
-      }
-      else {
+      } else {
         // fallback message if status isn't 200
         setError("Login failed. Please check your credentials.");
       }
-    }
-     
-    catch (err) {
+    } catch (err) {
       console.error("Login failed:", err);
-      const msg = err?.response?.data?.message || "Invalid username or password";
+      const msg =
+        err?.response?.data?.message || "Invalid username or password";
 
       setError(msg);
-    } 
-    finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -117,7 +114,6 @@ const Login = () => {
           borderRadius: 1,
           flexDirection: "column",
           alignItems: "center",
-            
         }}
       >
         <Box
@@ -127,7 +123,6 @@ const Login = () => {
             display: "flex",
             flexDirection: "column",
             py: 3,
-              
           }}
         >
           <Box
@@ -144,7 +139,12 @@ const Login = () => {
 
           <Box sx={{ width: "100%", textAlign: "center" }}>
             <Typography
-              sx={{ fontSize: "24px", color: "black", fontWeight: "bold", mt: -1 }}
+              sx={{
+                fontSize: "24px",
+                color: "black",
+                fontWeight: "bold",
+                mt: -1,
+              }}
             >
               Welcome to the PigoPi
             </Typography>
@@ -158,10 +158,8 @@ const Login = () => {
                 flexDirection: "column",
                 gap: "16px",
                 marginTop: "8px",
-                
               }}
             >
-             
               <Box>
                 <FormLabel
                   htmlFor="username"
@@ -170,7 +168,6 @@ const Login = () => {
                     fontSize: "14px",
                     color: "#616161",
                     mb: 1,
-                 
 
                     "& .MuiFormLabel-asterisk": {
                       color: "red",
@@ -197,10 +194,10 @@ const Login = () => {
                   }}
                 />
                 {usernameError && (
-                <Typography sx={{ color: "red", fontSize: "12px", mt: 0.5 }}>
-                  {usernameError}
-                </Typography>
-              )}
+                  <Typography sx={{ color: "red", fontSize: "12px", mt: 0.5 }}>
+                    {usernameError}
+                  </Typography>
+                )}
               </Box>
 
               <Box
@@ -208,7 +205,6 @@ const Login = () => {
                   width: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  
                 }}
               >
                 <FormLabel
@@ -218,7 +214,7 @@ const Login = () => {
                     fontSize: "14px",
                     color: "#616161",
                     mb: 1,
-                  
+
                     "& .MuiFormLabel-asterisk": {
                       color: "red",
                     },
@@ -233,18 +229,18 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   endDecorator={
                     showPassword ? (
-                      <Tooltip title="Hide password"> 
-                      <VisibilityOffIcon
-                        sx={{ cursor: "pointer" }}
-                        onClick={handleShowPassword}
-                      />
+                      <Tooltip title="Hide password">
+                        <VisibilityOffIcon
+                          sx={{ cursor: "pointer" }}
+                          onClick={handleShowPassword}
+                        />
                       </Tooltip>
                     ) : (
                       <Tooltip title="Show password">
-                      <VisibilityIcon
-                        sx={{ cursor: "pointer" }}
-                        onClick={handleShowPassword}
-                      />
+                        <VisibilityIcon
+                          sx={{ cursor: "pointer" }}
+                          onClick={handleShowPassword}
+                        />
                       </Tooltip>
                     )
                   }
@@ -258,17 +254,17 @@ const Login = () => {
                     fontSize: "14px",
                     color: "#212121",
                     py: "10px",
-                    pl: "20px",  
+                    pl: "20px",
                   }}
                 />
 
                 {passwordError && (
-                <Typography sx={{ color: "red", fontSize: "12px", mt: 0.5, }}>
-                  {passwordError}
-                </Typography>
-              )}
+                  <Typography sx={{ color: "red", fontSize: "12px", mt: 0.5 }}>
+                    {passwordError}
+                  </Typography>
+                )}
               </Box>
-              
+
               {error && (
                 <Alert color="danger" variant="soft" size="sm">
                   {error}
