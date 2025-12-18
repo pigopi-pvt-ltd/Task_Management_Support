@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Box, CssBaseline, Drawer, useTheme, IconButton, Slide } from "@mui/material";
+import {
+  Box,
+  CssBaseline,
+  Drawer,
+  useTheme,
+  IconButton,
+  Slide,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Sidebar from "../Sidebar/Sidebar";
 import Topbar from "../Header/Topbar";
 import axios from "axios";
 import { Outlet } from "react-router-dom";
 import CustomSnackbar from "../Snackbar/Snackbar";
+import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 
 const drawerWidth = 240;
 
@@ -49,6 +57,31 @@ const DashboardLayout = ({ children }) => {
     }
   };
 
+  const socket = socketFunctions.getSocket();
+  // const dispatch = useDispatch();
+  useEffect(() => {
+    let currentUserData = JSON.parse(localStorage.getItem("currentUserData"));
+    console.log("currentuserData--", currentUserData);
+    if (!currentUserData) {
+      return;
+    }
+    if (currentUserData.role.toLowerCase() == "global_admin") {
+      socket.on("room_and_ticket_created", (ticketData) => {
+        console.log("ticket data---", ticketData);
+        // dispatch(
+        //   openSnackbar({
+        //     message: "New Chat Ticket created By a User",
+        //     severity: "info",
+        //   })
+        // );
+        alert("New Chat Ticket created By a User");
+      });
+      return () => {
+        socket.off("room_and_ticket_created");
+      };
+    }
+  }, []);
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <CssBaseline />
@@ -77,9 +110,7 @@ const DashboardLayout = ({ children }) => {
             }}
             open
           >
-            <Sidebar
-              mobileOpen={mobileOpen}
-            />
+            <Sidebar mobileOpen={mobileOpen} />
           </Drawer>
 
           {/* Mobile Sidebar */}
@@ -99,14 +130,12 @@ const DashboardLayout = ({ children }) => {
               },
             }}
           >
-            <Box sx={{ textAlign: 'right', p: 1 }}>
+            <Box sx={{ textAlign: "right", p: 1 }}>
               <IconButton onClick={handleDrawerToggle}>
                 <CloseIcon />
               </IconButton>
             </Box>
-            <Sidebar
-              mobileOpen={mobileOpen}
-            />
+            <Sidebar mobileOpen={mobileOpen} />
           </Drawer>
         </>
 
