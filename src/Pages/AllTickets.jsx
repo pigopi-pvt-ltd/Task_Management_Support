@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -22,6 +23,7 @@ import NoDataOverlay from "../components/Custom/NoData";
 import UpdateTickets from "../components/Tickets/UpdateTickets";
 
 const AllTickets = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -92,7 +94,26 @@ const AllTickets = () => {
   }, [fetchTickets]);
 
   const columns = [
-    { field: "id", headerName: "TICKET #ID", width: 250 },
+    {
+      field: "id",
+      headerName: "TICKET #ID",
+      width: 250,
+      renderCell: (params) => (
+        <Typography
+          onClick={() => navigate(`/ticket/${params.value}`)}
+          sx={{
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            "&:hover": {
+              color: "#0d47a1",
+            },
+          }}
+        >
+          {params.value}
+        </Typography>
+      ),
+    },
     { field: "subject", headerName: "TICKET SUBJECT", width: 250 },
     { field: "ticketType", headerName: "TYPE", width: 150 },
     { field: "subType", headerName: "SUB-TYPE", width: 150 },

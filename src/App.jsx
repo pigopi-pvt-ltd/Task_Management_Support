@@ -7,6 +7,7 @@ import ProtectedRoute from './utils/ProtectedRoute'
 import { getToken } from './utils/auth'
 
 import AllTickets from './Pages/AllTickets'
+import TicketDetails from './Pages/TicketDetails'
 
 function App() {
   const token = getToken();
@@ -18,6 +19,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/users" element={<Users />} />
         <Route path="/all-tickets" element={<AllTickets />} />
+        <Route path="/ticket/:ticketId" element={<TicketDetails />} />
       </Route>
     </Routes>
   )

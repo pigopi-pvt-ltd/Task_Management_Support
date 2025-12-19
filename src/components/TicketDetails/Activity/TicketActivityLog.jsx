@@ -1,20 +1,73 @@
-import { Box, Typography, Paper, Stack } from "@mui/material";
+import { Box, Typography, Paper, Stack, Tabs, Tab, Divider } from "@mui/material";
+import { useState } from "react";
 
+function TicketActivityLog({ ticket }) {
+  const [value, setValue] = useState(1);
 
-function TicketActivityLog() {
-return (
-<Box>
-<Typography fontWeight={600} mb={1}>Activity Log</Typography>
+  if (!ticket) return null;
 
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
-<Paper sx={{ p: 2, borderRadius: 2 }}>
-<Stack spacing={1}>
-<Typography variant="body2">L1 - GHD | Closed</Typography>
-<Typography variant="caption" color="text.secondary">
-Actioned on: 07 Nov 2025 3:00 AM
-</Typography>
-</Stack>
-</Paper>
-</Box>
-);
+  return (
+    <Box sx={{ mt: 1 }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          sx={{
+            minHeight: 36,
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontWeight: 600,
+              minHeight: 36,
+            },
+          }}
+        >
+          <Tab label="Work Note" />
+          <Tab label="Activity Log" />
+        </Tabs>
+
+        <Divider />
+
+      {value === 1 && (
+      <Paper sx={{ p: 2, borderRadius: 2 }}>
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600}>
+              Ticket Created
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              by {ticket.createdByName || "Unknown"} on{" "}
+              {ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : "N/A"}
+            </Typography>
+          </Box>
+
+          {ticket.updatedAt && ticket.updatedAt !== ticket.createdAt && (
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600}>
+                Ticket Updated
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                by {ticket.updatedByName || "Unknown"} on{" "}
+                {new Date(ticket.updatedAt).toLocaleString()}
+              </Typography>
+            </Box>
+          )}
+
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600}>
+              Current Status
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : "Pending"}
+            </Typography>
+          </Box>
+        </Stack>
+      </Paper>
+      )}
+    </Box>
+  );
 }
+
+export default TicketActivityLog;
