@@ -8,6 +8,7 @@ import { getToken } from "./utils/auth";
 
 import AllTickets from "./Pages/AllTickets";
 import ChatManagement from "./Pages/ChatManagement";
+import LiveChat from "./components/LiveChat/LiveChat";
 
 function App() {
   const token = getToken();
@@ -23,6 +24,7 @@ function App() {
         <Route path="/users" element={<Users />} />
         <Route path="/all-tickets" element={<AllTickets />} />
         <Route path="/chat-management" element={<ChatManagement />} />
+        <Route path="/live-chat" element={<LiveChat />} />
       </Route>
     </Routes>
   );

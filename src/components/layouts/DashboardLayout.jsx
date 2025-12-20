@@ -14,6 +14,8 @@ import axios from "axios";
 import { Outlet } from "react-router-dom";
 import CustomSnackbar from "../Snackbar/Snackbar";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
+import { useDispatch } from "react-redux";
+import { setRoomMessage } from "../../store/slices/chatSupportSlice.js";
 
 const drawerWidth = 240;
 
@@ -59,27 +61,30 @@ const DashboardLayout = ({ children }) => {
 
   const socket = socketFunctions.getSocket();
   // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   useEffect(() => {
-    let currentUserData = JSON.parse(localStorage.getItem("currentUserData"));
-    console.log("currentuserData--", currentUserData);
-    if (!currentUserData) {
-      return;
-    }
-    if (currentUserData.role.toLowerCase() == "global_admin") {
-      socket.on("room_and_ticket_created", (ticketData) => {
-        console.log("ticket data---", ticketData);
-        // dispatch(
-        //   openSnackbar({
-        //     message: "New Chat Ticket created By a User",
-        //     severity: "info",
-        //   })
-        // );
-        alert("New Chat Ticket created By a User");
-      });
-      return () => {
-        socket.off("room_and_ticket_created");
-      };
-    }
+    socket.on("room_and_ticket_created", (ticketData) => {
+      console.log("ticket data---", ticketData);
+      // dispatch(
+      //   openSnackbar({
+      //     message: "New Chat Ticket created By a User",
+      //     severity: "info",
+      //   })
+      // );
+      alert("New Chat Ticket created By a User");
+    });
+    socket.on("receive_new_message", (messageData) => {
+      console.log("new messaged received---", messageData);
+      dispatch(
+        setRoomMessage({
+          message: messageData,
+        })
+      );
+    });
+    return () => {
+      socket.off("room_and_ticket_created");
+      socket.off("receive_new_message");
+    };
   }, []);
 
   return (
