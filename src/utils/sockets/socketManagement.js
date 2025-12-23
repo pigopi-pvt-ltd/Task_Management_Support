@@ -1,7 +1,8 @@
 import io from "socket.io-client";
+import { config } from "../../../config";
 
 // The URL of your Node.js backend
-const SOCKET_SERVER_URL = "http://localhost:3000";
+const SOCKET_SERVER_URL = config.apiBaseUrl;
 
 // Initialize the socket connection
 const socket = io(SOCKET_SERVER_URL, {
