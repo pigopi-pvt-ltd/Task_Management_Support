@@ -23,9 +23,16 @@ const chatSupportSlice = createSlice({
     initializeMessages: (state, action) => {
       state.liveChatRoomInfo.messages = action.payload.messages;
     },
+    joinRoomClicked: (state, action) => {
+      state.liveChatRoomInfo.chatRoom = action.payload.chatRoom;
+    },
   },
 });
 
-export const { setLiveChatRoomInfo, setRoomMessage, initializeMessages } =
-  chatSupportSlice.actions;
+export const {
+  setLiveChatRoomInfo,
+  setRoomMessage,
+  initializeMessages,
+  joinRoomClicked,
+} = chatSupportSlice.actions;
 export default chatSupportSlice;

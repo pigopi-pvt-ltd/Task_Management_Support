@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  getChatDataByRoomIdSupport,
   getChatHistory,
   handleAssignChat,
+  handlegetallAssignedChats,
   handleGetAllSupportEmployees,
   handleGetAllTickets,
   handlegetAssignedChat,
@@ -63,5 +65,34 @@ export const useGetChatHistory = (token, roomId, getHistory) => {
     ],
     queryFn: () => getChatHistory(token, roomId),
     enabled: !!roomId,
+  });
+};
+
+export const useGetallAssignedChatTickets = (token, page) => {
+  return useQuery({
+    queryKey: [
+      "My-assigned-chat-Tickets",
+      {
+        token: token,
+        page: page,
+      },
+    ],
+    queryFn: () => {
+      return handlegetallAssignedChats(token, page);
+    },
+  });
+};
+
+export const useGetChatDataByRoomIdSupport = (token, roomId) => {
+  return useQuery({
+    queryKey: [
+      "chat-history",
+      {
+        token: token,
+        roomId: roomId,
+        // getHistory: getHistory,
+      },
+    ],
+    queryFn: () => getChatDataByRoomIdSupport(token, roomId),
   });
 };

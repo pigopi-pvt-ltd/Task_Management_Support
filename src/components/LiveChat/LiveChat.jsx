@@ -11,9 +11,10 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import {
   useGetAssignedTicket,
+  useGetChatDataByRoomIdSupport,
   useGetChatHistory,
 } from "../../services/queries";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 // import ChatMessageTo from "./ChatMessageFromEmployee.jsx";
@@ -32,46 +33,56 @@ const LiveChat = () => {
 
   const theme = useTheme();
   let token = localStorage.getItem("token");
+  let currentRoomId = localStorage.getItem("currentRoomId");
   const [page, setPage] = useState(1);
-  const { data, isError, error, isLoading, isSuccess } = useGetAssignedTicket(
-    token,
-    page
-  );
-  if (isError) {
-    console.log("error---", error);
-  }
-  let droomId = null;
-  if (data) {
-    console.log("data from assigned ticket---", data);
-    droomId = data.assignedTicket.chatRoom;
-  }
+  // const { data, isError, error, isLoading, isSuccess } = useGetAssignedTicket(
+  //   token,
+  //   page
+  // );
+  // if (isError) {
+  //   console.log("error---", error);
+  // }
+  // let droomId = null;
+  // if (data) {
+  //   console.log("data from assigned ticket---", data);
+  //   droomId = data.chatTicket[0].chatRoom;
+  // }
   const { messages, chatRoom, userInfo } = useSelector(
     (state) => state.chatSupport.liveChatRoomInfo
   );
   const dispatch = useDispatch();
   const [getHistory, setGetHistoryNow] = useState(false);
+  const { data, isError, error, isLoading, isSuccess } =
+    useGetChatDataByRoomIdSupport(token, currentRoomId);
+  if (data) {
+    console.log("data-----", data);
+  }
+  if (isError) {
+    console.log("err", error);
+  }
   const {
     data: chatHistoryMessages,
     isError: isHistoryError,
     error: HistoryError,
     isLoading: isHistoryLoading,
-  } = useGetChatHistory(token, chatRoom, getHistory);
+  } = useGetChatHistory(token, currentRoomId, getHistory);
   if (isHistoryError) {
     console.log("history error---", HistoryError);
   }
   useEffect(() => {
-    if (data) {
+    if (data && data.chatTicket[0]) {
       console.log("data from assigned ticket---", data);
-      dispatch(
-        setLiveChatRoomInfo({
-          chatRoom: data.assignedTicket.chatRoom,
-          userInfo: {
-            organizationId: data.assignedTicket.organizationId,
-            branchId: data.assignedTicket.branchId,
-            userId: data.assignedTicket.createdBy,
-          },
-        })
-      );
+      if (data.chatTicket[0])
+        dispatch(
+          setLiveChatRoomInfo({
+            chatRoom: data.chatTicket[0].chatRoom,
+            userInfo: {
+              organizationId: data.chatTicket[0].organizationId,
+              branchId: data.chatTicket[0].branchId,
+              userId: data.chatTicket[0].createdBy,
+            },
+          })
+        );
       if (isSuccess) {
         setGetHistoryNow(true);
       }
@@ -89,25 +100,38 @@ const LiveChat = () => {
     }
   }, [isHistoryLoading]);
 
+  //scrolling code
+
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const socket = socketFunctions.getSocket();
   const handleSendMessage = () => {
     if (messageValue.trim().length == 0) {
       return;
     }
     let messageData = {
-      organizationId: data.assignedTicket.organizationId,
-      branchId: data.assignedTicket.branchId,
-      from: data.assignedTicket.assignedTo,
-      to: data.assignedTicket.createdBy,
+      organizationId: data.chatTicket[0].organizationId,
+      branchId: data.chatTicket[0].branchId,
+      from: data.chatTicket[0].assignedTo,
+      to: data.chatTicket[0].createdBy,
       message: messageValue.trim(),
-      chatRoom: data.assignedTicket.chatRoom,
-      userId: data.assignedTicket.createdBy,
+      chatRoom: data.chatTicket[0].chatRoom,
+      userId: data.chatTicket[0].createdBy,
     };
     socket.emit("join_room", {
-      roomId: data.assignedTicket.chatRoom,
+      roomId: data.chatTicket[0].chatRoom,
     });
 
     socket.emit("new_message", messageData);
+    setMessageValue("");
     // dispatch(
     //   setRoomMessage({
     //     message: messageData,
@@ -117,11 +141,21 @@ const LiveChat = () => {
 
   const [messageValue, setMessageValue] = useState("");
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+
+      console.log("Enter pressed! Sending message...");
+      handleSendMessage();
+    }
+  };
+
   // const [messages, setMessages] = useState([]);
 
   return (
     <>
-      {data && (
+      {/* {isHistoryLoading} */}
+      {data && data.chatTicket[0] && (
         <Grid
           container
           sx={
@@ -167,7 +201,7 @@ const LiveChat = () => {
                     fontWeight: "bold",
                   }}
                 >
-                  User: {data.assignedTicket.createdByName}
+                  User: {data.chatTicket[0].createdByName}
                 </Typography>
                 <Typography variant="subtitle2" color="success">
                   online
@@ -181,7 +215,7 @@ const LiveChat = () => {
                       fontWeight: "medium",
                     }}
                   >
-                    {data.assignedTicket.ticketType.replaceAll("_", " ")}
+                    {data.chatTicket[0].ticketType.replaceAll("_", " ")}
                   </span>
                 </Typography>
                 <Typography variant="subtitle1">
@@ -191,7 +225,7 @@ const LiveChat = () => {
                       fontWeight: "medium",
                     }}
                   >
-                    {data.assignedTicket.status}
+                    {data.chatTicket[0].status}
                   </span>
                 </Typography>
               </Grid>
@@ -242,7 +276,7 @@ const LiveChat = () => {
                     //   <ChatMessageTo key={index} message={message.message} />
                     // );
                     return message.from == "support_employee" ||
-                      message.from == data.assignedTicket.assignedTo ? (
+                      message.from == data.chatTicket[0].assignedTo ? (
                       <ChatMessageFromEmployee
                         key={index}
                         message={message.message}
@@ -254,6 +288,7 @@ const LiveChat = () => {
                       />
                     );
                   })}
+                <div ref={messagesEndRef} />
               </Grid>
             </Grid>
             <Grid
@@ -281,9 +316,11 @@ const LiveChat = () => {
                     // border: 0.5,
                     borderRadius: "1.5 rem",
                   }}
+                  value={messageValue}
                   onChange={(e) => {
                     setMessageValue(e.target.value);
                   }}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
               <Grid container spacing={1}>

@@ -16,6 +16,7 @@ import CustomSnackbar from "../Snackbar/Snackbar";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 import { useDispatch } from "react-redux";
 import { setRoomMessage } from "../../store/slices/chatSupportSlice.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 const drawerWidth = 240;
 
@@ -60,6 +61,7 @@ const DashboardLayout = ({ children }) => {
   };
 
   const socket = socketFunctions.getSocket();
+  const queryClient = useQueryClient();
   // const dispatch = useDispatch();
   const dispatch = useDispatch();
   useEffect(() => {
@@ -71,6 +73,9 @@ const DashboardLayout = ({ children }) => {
       //     severity: "info",
       //   })
       // );
+      queryClient.invalidateQueries({
+        queryKey: ["chat-tickets"],
+      });
       alert("New Chat Ticket created By a User");
     });
     socket.on("receive_new_message", (messageData) => {

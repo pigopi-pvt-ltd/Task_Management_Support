@@ -130,3 +130,56 @@ export const getChatHistory = async (token, roomId) => {
   }
   return await response.json();
 };
+
+export const handlegetallAssignedChats = async (token, page) => {
+  let url = `/chat-tickets/get-support-employee-assigned-chats?page=${page}`;
+  if (!token) {
+    let error = new Error("No tocken provided");
+    throw error;
+  }
+  let response = await fetch(backendbaseUrl + url, {
+    method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    let errorData = await response.json();
+    let error = new Error(errorData.error || "error while getting ticket");
+    error.errorData = errorData;
+    throw error;
+  }
+  return await response.json();
+};
+
+export const getChatDataByRoomIdSupport = async (token, roomId) => {
+  if (!roomId) {
+    let error = new Error("No roomId provided");
+    throw error;
+  }
+  let endPoint = `/chat-tickets/getChatDataByRoomIdSupport?roomId=${roomId}`;
+  if (!token) {
+    let error = new Error("No tocken provided");
+    throw error;
+  }
+  const response = await fetch(backendbaseUrl + endPoint, {
+    method: "GET",
+    headers: {
+      authorization: `Bearer ${token}`,
+
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    let errorData = await response.json();
+    let error = new Error(
+      errorData.error || "error while getting chat ticket data"
+    );
+    error.errorData = errorData;
+    throw error;
+  }
+  return await response.json();
+};

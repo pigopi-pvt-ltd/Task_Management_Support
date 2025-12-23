@@ -39,11 +39,17 @@ const Sidebar = ({ mobileOpen }) => {
       icon: <NumbersIcon />,
       roles: ["admin", "employee"], // ✅ both can see
     },
+    // {
+    //   label: "Live Chat",
+    //   path: "/live-chat",
+    //   icon: <ChatIcon />,
+    //   roles: ["employee"],
+    // },
     {
-      label: "Live Chat",
-      path: "/live-chat",
+      label: "My chats",
+      path: "/my-chats",
       icon: <ChatIcon />,
-      roles: ["admin", "employee"], // ✅ both can see
+      roles: ["employee"],
     },
   ];
 
