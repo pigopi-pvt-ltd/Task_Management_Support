@@ -50,7 +50,7 @@ function TicketDetails() {
 
   if (error) {
     return (
-      <Box sx={{ p: 2, bgcolor: "#f5f7eb", minHeight: "100vh" }}>
+      <Box sx={{ p: 0, bgcolor: "#f5f7eb" }}>
         <Typography color="error" variant="h6">
           {error}
         </Typography>
@@ -60,14 +60,14 @@ function TicketDetails() {
 
   if (!ticket) {
     return (
-      <Box sx={{ p: 2, bgcolor: "#f5f7eb", minHeight: "100vh" }}>
+      <Box sx={{ p: 0, bgcolor: "#f5f7eb" }}>
         <Typography variant="h6">No ticket data available</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 2, bgcolor: "#f5f7eb", minHeight: "100vh", height: "auto" }}>
+    <Box sx={{ p: 0, bgcolor: "#f5f7eb" }}>
       <TicketStatusHeader ticket={ticket} />
 
       <Grid container spacing={2} mt={1}>
@@ -75,14 +75,14 @@ function TicketDetails() {
           <TicketInfoPanel ticket={ticket} />
         </Grid>
         <Grid item xs={12} md={8}>
-          <TicketComments ticket={ticket} />
+          <Box sx={{ maxWidth: '800px' }}>
+            <TicketComments ticket={ticket} />
+            <Box mt={2}>
+              <TicketActivityLog ticket={ticket} />
+            </Box>
+          </Box>
         </Grid>
-        <Box mt={2} pb={4}>
-        <TicketActivityLog ticket={ticket} />
-      </Box>
       </Grid>
-
-      
     </Box>
   );
 }

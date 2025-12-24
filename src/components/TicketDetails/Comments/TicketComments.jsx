@@ -72,9 +72,9 @@ function TicketComments({ ticket }) {
           color: "#fff",
           borderRadius: 2,
           p: 2,
-          width: "800px",
           minHeight: "250px",
           height: "auto",
+          width: "600px",
         }}
       >
         {/* HEADER ROW */}
