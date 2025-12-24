@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Box, CssBaseline, Drawer, useTheme, IconButton, Slide } from "@mui/material";
+import {
+  Box,
+  CssBaseline,
+  Drawer,
+  useTheme,
+  IconButton,
+  Slide,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Sidebar from "../Sidebar/Sidebar";
 import Topbar from "../Header/Topbar";
 import axios from "axios";
 import { Outlet } from "react-router-dom";
 import CustomSnackbar from "../Snackbar/Snackbar";
+import * as socketFunctions from "../../utils/sockets/socketManagement.js";
+import { useDispatch } from "react-redux";
+import { setRoomMessage } from "../../store/slices/chatSupportSlice.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 const drawerWidth = 240;
 
@@ -49,6 +60,38 @@ const DashboardLayout = ({ children }) => {
     }
   };
 
+  const socket = socketFunctions.getSocket();
+  const queryClient = useQueryClient();
+  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  useEffect(() => {
+    socket.on("room_and_ticket_created", (ticketData) => {
+      console.log("ticket data---", ticketData);
+      // dispatch(
+      //   openSnackbar({
+      //     message: "New Chat Ticket created By a User",
+      //     severity: "info",
+      //   })
+      // );
+      queryClient.invalidateQueries({
+        queryKey: ["chat-tickets"],
+      });
+      alert("New Chat Ticket created By a User");
+    });
+    socket.on("receive_new_message", (messageData) => {
+      console.log("new messaged received---", messageData);
+      dispatch(
+        setRoomMessage({
+          message: messageData,
+        })
+      );
+    });
+    return () => {
+      socket.off("room_and_ticket_created");
+      socket.off("receive_new_message");
+    };
+  }, []);
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <CssBaseline />
@@ -77,9 +120,7 @@ const DashboardLayout = ({ children }) => {
             }}
             open
           >
-            <Sidebar
-              mobileOpen={mobileOpen}
-            />
+            <Sidebar mobileOpen={mobileOpen} />
           </Drawer>
 
           {/* Mobile Sidebar */}
@@ -99,14 +140,12 @@ const DashboardLayout = ({ children }) => {
               },
             }}
           >
-            <Box sx={{ textAlign: 'right', p: 1 }}>
+            <Box sx={{ textAlign: "right", p: 1 }}>
               <IconButton onClick={handleDrawerToggle}>
                 <CloseIcon />
               </IconButton>
             </Box>
-            <Sidebar
-              mobileOpen={mobileOpen}
-            />
+            <Sidebar mobileOpen={mobileOpen} />
           </Drawer>
         </>
 

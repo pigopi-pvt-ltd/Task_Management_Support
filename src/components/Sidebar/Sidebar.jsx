@@ -10,6 +10,8 @@ import { Link, useLocation } from "react-router-dom";
 
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import NumbersIcon from "@mui/icons-material/Numbers";
+import ChatIcon from "@mui/icons-material/Chat";
 
 import { getCurrentUserData } from "../../utils/auth";
 
@@ -30,6 +32,24 @@ const Sidebar = ({ mobileOpen }) => {
       path: "/all-tickets",
       icon: <ConfirmationNumberIcon />,
       roles: ["admin", "employee"], // ✅ both can see
+    },
+    {
+      label: "All Chats",
+      path: "/chat-management",
+      icon: <NumbersIcon />,
+      roles: ["admin", "employee"], // ✅ both can see
+    },
+    // {
+    //   label: "Live Chat",
+    //   path: "/live-chat",
+    //   icon: <ChatIcon />,
+    //   roles: ["employee"],
+    // },
+    {
+      label: "My chats",
+      path: "/my-chats",
+      icon: <ChatIcon />,
+      roles: ["employee"],
     },
   ];
 
