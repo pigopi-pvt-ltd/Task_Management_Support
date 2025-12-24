@@ -6,6 +6,7 @@ let initialValue = {
     chatRoom: null,
     userInfo: null,
   },
+  onlineUsers: [],
 };
 const chatSupportSlice = createSlice({
   name: "chatSupport",
@@ -26,6 +27,22 @@ const chatSupportSlice = createSlice({
     joinRoomClicked: (state, action) => {
       state.liveChatRoomInfo.chatRoom = action.payload.chatRoom;
     },
+    setInitialOnlineUsers: (state, action) => {
+      state.onlineUsers = action.payload.onlineUsers;
+    },
+    addOnlineUser: (state, action) => {
+      if (!state.onlineUsers.includes(action.payload.userId)) {
+        state.onlineUsers.push(action.payload.userId);
+      }
+    },
+    removeOnlineUser: (state, action) => {
+      if (state.onlineUsers.includes(action.payload.userId)) {
+        let startIndex = state.onlineUsers.findIndex((item) => {
+          return item == action.payload.userId;
+        });
+        state.onlineUsers.splice(startIndex, 1);
+      }
+    },
   },
 });
 
@@ -34,5 +51,8 @@ export const {
   setRoomMessage,
   initializeMessages,
   joinRoomClicked,
+  setInitialOnlineUsers,
+  addOnlineUser,
+  removeOnlineUser,
 } = chatSupportSlice.actions;
 export default chatSupportSlice;

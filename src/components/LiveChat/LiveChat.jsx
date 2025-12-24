@@ -55,7 +55,7 @@ const LiveChat = () => {
   const { data, isError, error, isLoading, isSuccess } =
     useGetChatDataByRoomIdSupport(token, currentRoomId);
   if (data) {
-    console.log("data-----", data);
+    console.log("data--ct-----", data);
   }
   if (isError) {
     console.log("err", error);

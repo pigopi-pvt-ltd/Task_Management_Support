@@ -11,11 +11,13 @@ import {
   useGetAllSupportEmployees,
   useGetAllTickets,
 } from "../services/queries";
+import { useDispatch } from "react-redux";
+import { setLoader } from "../store/slices/loaderSlice";
 
 const ChatTicketManagement = () => {
   const [page, setPage] = useState(1);
   const token = localStorage.getItem("token");
-
+  const dispatch = useDispatch();
   const { data, isError, isLoading } = useGetAllTickets(token, page);
 
   const {
@@ -25,6 +27,16 @@ const ChatTicketManagement = () => {
     error: emperr,
   } = useGetAllSupportEmployees(token);
 
+  dispatch(
+    setLoader({
+      loading: isLoading,
+    })
+  );
+  dispatch(
+    setLoader({
+      loading: employeeLoading,
+    })
+  );
   //   const dispatch = useDispatch;
   if (isError) {
     // dispatch(
@@ -97,6 +109,7 @@ const ChatTicketManagement = () => {
     { field: "status", headerName: "Status", sortable: false },
     { field: "updatedAt", headerName: "Last Updated", sortable: false },
   ];
+
   return (
     <>{employee && data && <DataTable cols={ChatColumns} rows={rows} />}</>
   );

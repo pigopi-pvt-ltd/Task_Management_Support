@@ -15,8 +15,14 @@ import { Outlet } from "react-router-dom";
 import CustomSnackbar from "../Snackbar/Snackbar";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 import { useDispatch } from "react-redux";
-import { setRoomMessage } from "../../store/slices/chatSupportSlice.js";
+import {
+  addOnlineUser,
+  removeOnlineUser,
+  setInitialOnlineUsers,
+  setRoomMessage,
+} from "../../store/slices/chatSupportSlice.js";
 import { useQueryClient } from "@tanstack/react-query";
+import Loader from "../Loader/Loader.jsx";
 
 const drawerWidth = 240;
 
@@ -86,87 +92,122 @@ const DashboardLayout = ({ children }) => {
         })
       );
     });
+    socket.on("initial_online_users_list", ({ users }) => {
+      console.log("users from init---", users);
+      dispatch(
+        setInitialOnlineUsers({
+          onlineUsers: users,
+        })
+      );
+    });
+    socket.on("user_online", (userData) => {
+      console.log("userOnlineData", userData);
+      dispatch(
+        addOnlineUser({
+          userId: userData.userId,
+        })
+      );
+    });
+    socket.on("user_offline", (userData) => {
+      console.log("userOfflineData", userData);
+      dispatch(
+        removeOnlineUser({
+          userId: userData.userId,
+        })
+      );
+    });
     return () => {
       socket.off("room_and_ticket_created");
       socket.off("receive_new_message");
+      socket.off("user_online");
+      socket.off("user_offline");
     };
   }, []);
 
+  useEffect(() => {
+    socket.emit("get_initial_online_users");
+  }, []);
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <CssBaseline />
+    <>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
+        <CssBaseline />
 
-      {/* CHANGE #1: Topbar full width, always on top */}
-      <Topbar
-        handleDrawerToggle={handleDrawerToggle}
-        username={username}
-        branchName={selectedBranch}
-      />
+        {/* CHANGE #1: Topbar full width, always on top */}
+        <Topbar
+          handleDrawerToggle={handleDrawerToggle}
+          username={username}
+          branchName={selectedBranch}
+        />
 
-      <Box sx={{ display: "flex", flexGrow: 1 }}>
-        <>
-          {/* Desktop Sidebar */}
-          <Drawer
-            variant="permanent"
+        <Box sx={{ display: "flex", flexGrow: 1 }}>
+          <>
+            {/* Desktop Sidebar */}
+            <Drawer
+              variant="permanent"
+              sx={{
+                display: { xs: "none", md: "block" },
+                "& .MuiDrawer-paper": {
+                  width: drawerWidth,
+                  top: "64px",
+                  height: "calc(100% - 64px)",
+                  borderRadius: 0,
+                  display: isFullscreen ? "none" : "block",
+                },
+              }}
+              open
+            >
+              <Sidebar mobileOpen={mobileOpen} />
+            </Drawer>
+
+            {/* Mobile Sidebar */}
+            <Drawer
+              variant="temporary"
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              ModalProps={{ keepMounted: true }}
+              TransitionComponent={Slide}
+              transitionDuration={{ enter: 500, exit: 500 }}
+              sx={{
+                display: { xs: "block", md: "none" },
+                "& .MuiDrawer-paper": {
+                  width: drawerWidth,
+                  borderRadius: 0,
+                  display: isFullscreen ? "none" : "block",
+                },
+              }}
+            >
+              <Box sx={{ textAlign: "right", p: 1 }}>
+                <IconButton onClick={handleDrawerToggle}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <Sidebar mobileOpen={mobileOpen} />
+            </Drawer>
+          </>
+
+          {/* Main Content */}
+          <Box
+            id="page-content"
+            component="main"
             sx={{
-              display: { xs: "none", md: "block" },
-              "& .MuiDrawer-paper": {
-                width: drawerWidth,
-                top: "64px",
-                height: "calc(100% - 64px)",
-                borderRadius: 0,
-                display: isFullscreen ? "none" : "block",
-              },
-            }}
-            open
-          >
-            <Sidebar mobileOpen={mobileOpen} />
-          </Drawer>
-
-          {/* Mobile Sidebar */}
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{ keepMounted: true }}
-            TransitionComponent={Slide}
-            transitionDuration={{ enter: 500, exit: 500 }}
-            sx={{
-              display: { xs: "block", md: "none" },
-              "& .MuiDrawer-paper": {
-                width: drawerWidth,
-                borderRadius: 0,
-                display: isFullscreen ? "none" : "block",
-              },
+              flexGrow: 1,
+              p: 0.5,
+              overflowY: "auto",
+              bgcolor: "#eeeeee",
+              ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0, // shift when sidebar visible
+              transition: "all 0.3s ease",
             }}
           >
-            <Box sx={{ textAlign: "right", p: 1 }}>
-              <IconButton onClick={handleDrawerToggle}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Sidebar mobileOpen={mobileOpen} />
-          </Drawer>
-        </>
-
-        {/* Main Content */}
-        <Box
-          id="page-content"
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 0.5,
-            overflowY: "auto",
-            bgcolor: "#eeeeee",
-            ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0, // shift when sidebar visible
-            transition: "all 0.3s ease",
-          }}
-        >
-          <Outlet />
-          <CustomSnackbar />
+            <Outlet />
+            <CustomSnackbar />
+          </Box>
         </Box>
       </Box>
-    </Box>
+      <Loader />
+    </>
   );
 };
 

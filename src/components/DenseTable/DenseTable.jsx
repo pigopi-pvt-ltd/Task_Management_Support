@@ -21,8 +21,8 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { Button } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { Badge, Button } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { joinRoomClicked } from "../../store/slices/chatSupportSlice";
 import { useNavigate } from "react-router";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
@@ -111,6 +111,7 @@ function EnhancedTableHead(props) {
     rowCount,
     onRequestSort,
     headCells,
+    actualRows,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -224,13 +225,18 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function DenseTable({ headCells, rows, ...props }) {
+export default function DenseTable({ headCells, rows, actualRows, ...props }) {
+  console.log("actualRows---", actualRows);
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+  const { onlineUsers } = useSelector((state) => state.chatSupport);
+
+  console.log("onlineUsers--", onlineUsers);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -288,7 +294,7 @@ export default function DenseTable({ headCells, rows, ...props }) {
       [...rows]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, rows]
   );
   const dispach = useDispatch();
   const navigate = useNavigate();
@@ -343,7 +349,7 @@ export default function DenseTable({ headCells, rows, ...props }) {
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={row.id}
+                    key={index}
                     selected={isItemSelected}
                     // sx={{ cursor: "pointer" }}
                   >
@@ -362,11 +368,44 @@ export default function DenseTable({ headCells, rows, ...props }) {
                       if (i == 0) {
                         return;
                       }
+                      if (field == "createdByName") {
+                        return (
+                          actualRows[index] && (
+                            <TableCell align="left" key={i}>
+                              {onlineUsers.includes(
+                                actualRows[index].createdBy
+                              ) ? (
+                                <Badge
+                                  anchorOrigin={{
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  }}
+                                  variant="dot"
+                                  color="success"
+                                >
+                                  {row[field]}
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="dot"
+                                  anchorOrigin={{
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  }}
+                                  color="error"
+                                >
+                                  {row[field]}
+                                </Badge>
+                              )}
+                            </TableCell>
+                          )
+                        );
+                      }
                       if (field == "chatRoom") {
                         return (
                           <TableCell
                             align="left"
-                            key={i}
+                            key={field}
                             // onClick={() => {
                             //   handleStartChatting(row);
                             // }}

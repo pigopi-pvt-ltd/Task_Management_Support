@@ -12,7 +12,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 10, // 10 minutes
       retry: 0, // Retry failed requests once
-      refetchOnWindowFocus: false, // Disable automatic refetch on window focus
+      // refetchOnWindowFocus: false, // Disable automatic refetch on window focus
     },
     mutations: {
       retry: 0, // Usually don't want to retry mutations automatically
