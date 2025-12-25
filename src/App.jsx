@@ -10,7 +10,7 @@ import AllTickets from "./Pages/AllTickets";
 import ChatManagement from "./Pages/ChatManagement";
 import LiveChat from "./components/LiveChat/LiveChat";
 import MyChats from "./Pages/MyChats";
-
+import TicketDetails from "./Pages/TicketDetails";
 function App() {
   const token = getToken();
 
