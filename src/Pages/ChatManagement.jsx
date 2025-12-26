@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 // import { useDispatch } from "react-redux";
-import { config } from "../../config";
+// import { config } from "../../config";
 import DataTable from "../components/DataTable/DataTable";
 import { Button } from "@mui/material";
 import DropDown from "../components/DataTable/DropDown";

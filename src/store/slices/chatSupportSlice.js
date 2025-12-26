@@ -6,6 +6,10 @@ let initialValue = {
     chatRoom: null,
     userInfo: null,
   },
+  screenShareData: null,
+  screenShareRequested: false,
+  voiceShareData: null,
+  voiceShareRequested: false,
   onlineUsers: [],
 };
 const chatSupportSlice = createSlice({
@@ -43,6 +47,18 @@ const chatSupportSlice = createSlice({
         state.onlineUsers.splice(startIndex, 1);
       }
     },
+    setScreenShareData: (state, action) => {
+      state.screenShareData = action.payload.screenShareData;
+    },
+    setScreenShareRequest: (state, action) => {
+      state.screenShareRequested = action.payload.screenShareRequested;
+    },
+    setvoiceShareData: (state, action) => {
+      state.voiceShareData = action.payload.voiceShareData;
+    },
+    setVoiceShareRequest: (state, action) => {
+      state.voiceShareRequested = action.payload.voiceShareRequested;
+    },
   },
 });
 
@@ -54,5 +70,9 @@ export const {
   setInitialOnlineUsers,
   addOnlineUser,
   removeOnlineUser,
+  setScreenShareData,
+  setScreenShareRequest,
+  setvoiceShareData,
+  setVoiceShareRequest,
 } = chatSupportSlice.actions;
 export default chatSupportSlice;

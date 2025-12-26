@@ -20,9 +20,14 @@ import {
   removeOnlineUser,
   setInitialOnlineUsers,
   setRoomMessage,
+  setScreenShareData,
+  setScreenShareRequest,
+  setvoiceShareData,
+  setVoiceShareRequest,
 } from "../../store/slices/chatSupportSlice.js";
 import { useQueryClient } from "@tanstack/react-query";
 import Loader from "../Loader/Loader.jsx";
+import { getCurrentUserData } from "../../utils/auth.js";
 
 const drawerWidth = 240;
 
@@ -70,6 +75,8 @@ const DashboardLayout = ({ children }) => {
   const queryClient = useQueryClient();
   // const dispatch = useDispatch();
   const dispatch = useDispatch();
+  const currentUserData = getCurrentUserData();
+
   useEffect(() => {
     socket.on("room_and_ticket_created", (ticketData) => {
       console.log("ticket data---", ticketData);
@@ -116,11 +123,62 @@ const DashboardLayout = ({ children }) => {
         })
       );
     });
+    socket.on(
+      "screen_share_request_" + currentUserData._id,
+      (screenShareData) => {
+        console.log("screen", screenShareData);
+        console.log("currentUserData", currentUserData);
+        if (screenShareData.agentId == currentUserData._id) {
+          dispatch(
+            setScreenShareData({
+              screenShareData: screenShareData,
+            })
+          );
+          dispatch(
+            setScreenShareRequest({
+              screenShareRequested: true,
+            })
+          );
+          alert(
+            "screen share request from " +
+              screenShareData.username +
+              " join room and accept."
+          );
+        }
+      }
+    );
+
+    socket.on(
+      "voice_share_request_" + currentUserData._id,
+      (voiceShareData) => {
+        console.log("screen", voiceShareData);
+        console.log("currentUserData", currentUserData);
+        if (voiceShareData.agentId == currentUserData._id) {
+          dispatch(
+            setvoiceShareData({
+              voiceShareData: voiceShareData,
+            })
+          );
+          dispatch(
+            setVoiceShareRequest({
+              voiceShareRequested: true,
+            })
+          );
+          alert(
+            "screen share request from " +
+              voiceShareData.username +
+              " join room and accept."
+          );
+        }
+      }
+    );
     return () => {
       socket.off("room_and_ticket_created");
       socket.off("receive_new_message");
       socket.off("user_online");
       socket.off("user_offline");
+      socket.off("screen_share_request" + currentUserData._id);
+      socket.off("voice_share_request_" + currentUserData._id);
     };
   }, []);
 
