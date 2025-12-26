@@ -4,6 +4,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 import { useAssignChat } from "../../services/mutations";
+import { useDispatch } from "react-redux";
+import { setLoader } from "../../store/slices/loaderSlice";
 
 export default function DropDown({ defaultValue, items, chatId }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -30,6 +32,13 @@ export default function DropDown({ defaultValue, items, chatId }) {
     console.log(assignChatData);
     handleClose();
   };
+
+  const dispatch = useDispatch();
+  dispatch(
+    setLoader({
+      loading: isPending,
+    })
+  );
 
   return (
     <div>
