@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -22,6 +23,7 @@ import NoDataOverlay from "../components/Custom/NoData";
 import UpdateTickets from "../components/Tickets/UpdateTickets";
 
 const AllTickets = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState(0);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -91,8 +93,41 @@ const AllTickets = () => {
     fetchTickets();
   }, [fetchTickets]);
 
+  const statusColor = {
+    pending: "warning",
+    "in-progress": "info",
+    resolved: "success",
+    closed: "error",
+  };
+
+  const priorityColor = {
+    low: "success",
+    medium: "warning",
+    high: "error",
+  };
+
   const columns = [
-    { field: "id", headerName: "TICKET #ID", width: 250 },
+    {
+      field: "ticketId",
+      headerName: "TICKET #ID",
+      width: 120,
+      align: "center",
+      renderCell: (params) => (
+        <Typography
+          onClick={() => navigate(`/ticket/${params.row.id}`)}
+          sx={{
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+            "&:hover": {
+              color: "#0d47a1",
+            },
+          }}
+        >
+          {params.value}
+        </Typography>
+      ),
+    },
     { field: "subject", headerName: "TICKET SUBJECT", width: 250 },
     { field: "ticketType", headerName: "TYPE", width: 150 },
     { field: "subType", headerName: "SUB-TYPE", width: 150 },
@@ -116,13 +151,19 @@ const AllTickets = () => {
       renderCell: (params) => (
         <Chip
           label={params.value}
-          color={
-            params.value === "inprogress"
-              ? "warning"
-              : params.value === "pending"
-              ? "default"
-              : "success"
-          }
+          color={statusColor[params.value] || "default"}
+          size="small"
+        />
+      ),
+    },
+    {
+      field: "priority",
+      headerName: "PRIORITY",
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={priorityColor[params.value] || "default"}
           size="small"
         />
       ),
@@ -140,10 +181,10 @@ const AllTickets = () => {
               height: "100%",
             }}
           >
-            <IconButton onClick={() => handleEditClick(params.row)}>
-              <EditIcon sx={{ color: "green" }} />
-            </IconButton>
-          </Box>
+              <IconButton onClick={() => handleEditClick(params.row)}>
+                <EditIcon sx={{ color: "green" }} />
+              </IconButton>
+            </Box>
         );
       },
     },
