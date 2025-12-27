@@ -93,14 +93,28 @@ const AllTickets = () => {
     fetchTickets();
   }, [fetchTickets]);
 
+  const statusColor = {
+    pending: "warning",
+    "in-progress": "info",
+    resolved: "success",
+    closed: "error",
+  };
+
+  const priorityColor = {
+    low: "success",
+    medium: "warning",
+    high: "error",
+  };
+
   const columns = [
     {
-      field: "id",
+      field: "ticketId",
       headerName: "TICKET #ID",
-      width: 250,
+      width: 120,
+      align: "center",
       renderCell: (params) => (
         <Typography
-          onClick={() => navigate(`/ticket/${params.value}`)}
+          onClick={() => navigate(`/ticket/${params.row.id}`)}
           sx={{
             cursor: "pointer",
             color: "#1976d2",
@@ -137,13 +151,19 @@ const AllTickets = () => {
       renderCell: (params) => (
         <Chip
           label={params.value}
-          color={
-            params.value === "inprogress"
-              ? "warning"
-              : params.value === "pending"
-              ? "default"
-              : "success"
-          }
+          color={statusColor[params.value] || "default"}
+          size="small"
+        />
+      ),
+    },
+    {
+      field: "priority",
+      headerName: "PRIORITY",
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={priorityColor[params.value] || "default"}
           size="small"
         />
       ),
@@ -161,10 +181,10 @@ const AllTickets = () => {
               height: "100%",
             }}
           >
-            <IconButton onClick={() => handleEditClick(params.row)}>
-              <EditIcon sx={{ color: "green" }} />
-            </IconButton>
-          </Box>
+              <IconButton onClick={() => handleEditClick(params.row)}>
+                <EditIcon sx={{ color: "green" }} />
+              </IconButton>
+            </Box>
         );
       },
     },
