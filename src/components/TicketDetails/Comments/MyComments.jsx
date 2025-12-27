@@ -6,7 +6,7 @@ import {
   Paper,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import PersonIcon from "@mui/icons-material/Person";
+import ChatIcon from '@mui/icons-material/Chat';
 
 // Styles for the modal content
 const style = {
@@ -15,9 +15,10 @@ const style = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "100%",
-  maxWidth: 640, // Corresponds to max-w-xl
-  bgcolor: "background.paper",
-  borderRadius: 1, // Corresponds to rounded-md
+  maxWidth: 640,
+  bgcolor: "#000",
+  color: "#fff",
+  borderRadius: 1,
   boxShadow: 24,
 };
 
@@ -42,13 +43,13 @@ const MyComments = ({ onClose }) => {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <PersonIcon sx={{ color: "text.secondary" }} />
+            <ChatIcon sx={{ color: "white" }} />
             <Typography id="my-comments-title" variant="h6" component="h2" fontSize={18} fontWeight="600">
               My Comments
             </Typography>
           </Box>
           <IconButton onClick={onClose} aria-label="close">
-            <CloseIcon />
+            <CloseIcon sx={{ color: "white" }}/>
           </IconButton>
         </Box>
 

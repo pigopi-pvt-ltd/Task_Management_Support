@@ -92,7 +92,7 @@ function TicketDetails() {
         onOpenUpdateModal={handleOpenUpdateModal}
       />
 
-      <Box display="flex" gap={2}>
+      <Box display="flex" gap={2} pt={1}>
         <Box width="25%">
           <TicketInfoPanel ticket={ticket} />
         </Box>

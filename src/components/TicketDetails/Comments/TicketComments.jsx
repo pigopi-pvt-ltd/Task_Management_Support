@@ -1,11 +1,11 @@
-import { Box, Typography, Paper, Tabs, Tab } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Box, Typography, Paper } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
 
 function TicketComments({ ticket }) {
   if (!ticket) return null;
 
   return (
-    <Box sx={{ p: 0, }}>
+    <Box sx={{ p: 0}}>
       {/* BLACK COMMENT HEADER CARD */}
       <Paper
         elevation={1}
@@ -15,22 +15,40 @@ function TicketComments({ ticket }) {
           borderRadius: 0.5,
           p: 2,
           minHeight: "250px",
-          height: "auto",
         }}
       >
         {/* HEADER ROW */}
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <CheckCircleIcon
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          {/* CIRCLE CHECK ICON */}
+          <Box
             sx={{
-              fontSize: 36,
-              color: "#fff",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              border: "4px solid #fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               mr: 2,
             }}
-          />
+          >
+            <CheckIcon
+              sx={{
+                fontSize:34,
+                color: "#fff",
+              }}
+            />
+          </Box>
 
+          {/* STATUS TEXT */}
           <Box>
             <Typography fontWeight={600}>Closed</Typography>
-
             <Typography variant="caption" sx={{ opacity: 0.8 }}>
               by {ticket.closedBy || "KUMAR REDDY KAPPETA"} (
               {ticket.empId || "2270341"})
