@@ -33,7 +33,7 @@ const AgentScreenViewer = ({ roomId }) => {
     const isLocalhost = window.location.hostname === "localhost";
     const peer = new Peer(roomId, {
       host: isLocalhost ? "localhost" : config.host,
-      port: isLocalhost ? 3000 : config.port,
+      port: isLocalhost ? 3000 : 443,
       path: "/peerjs",
       secure: !isLocalhost,
       // config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] },
