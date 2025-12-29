@@ -32,6 +32,7 @@ import ChatMessageFromEmployee from "./ChatMessageFromEmployee.jsx";
 import Peer from "peerjs";
 import AgentScreenViewer from "./AgentScreenViewer.jsx";
 import ScreenShareRequestModal from "./ScreeenShareRequestModal.jsx";
+import ResolveTicket from "./ResolveTicket.jsx";
 
 const LiveChat = () => {
   // will get assigned ticket
@@ -80,6 +81,7 @@ const LiveChat = () => {
               organizationId: data.chatTicket[0].organizationId,
               branchId: data.chatTicket[0].branchId,
               userId: data.chatTicket[0].createdBy,
+              username: data.chatTicket[0].createdByName,
             },
           })
         );
@@ -183,15 +185,17 @@ const LiveChat = () => {
       {data && data.chatTicket[0] && (
         <Grid
           container
-          sx={
-            {
-              // height: "90vh",
-            }
-          }
+          sx={{
+            height: "fit-content",
+            overflowX: "auto",
+            // height: "100%",
+          }}
           p={2}
+          spacing={3}
+          size={12}
           // mb={5}
           // justifyContent={''}
-          // alignItems={"center"}
+          alignItems={"start"}
         >
           <Grid
             boxShadow={3}
@@ -213,11 +217,9 @@ const LiveChat = () => {
               // mb={3}
               alignItems={"center"}
               px={2}
-              sx={
-                {
-                  // height: "15%",
-                }
-              }
+              sx={{
+                height: "15%",
+              }}
             >
               <Grid flexGrow={1}>
                 <Typography
@@ -261,7 +263,7 @@ const LiveChat = () => {
               size={12}
               // flexGrow={1}
               sx={{
-                height: "70%",
+                height: "65%",
 
                 overflowY: "scroll",
                 // 1. Define the width of the scrollbar
@@ -295,20 +297,34 @@ const LiveChat = () => {
                 // ml={"auto"}
                 p={2}
               >
-                {messages.length > 0 &&
+                {userInfo &&
+                  messages.length > 0 &&
                   messages.map((message, index) => {
                     // return (
                     //   <ChatMessageTo key={index} message={message.message} />
                     // );
-                    return message.from == "support_employee" ||
-                      message.from == data.chatTicket[0].assignedTo ? (
-                      <ChatMessageFromEmployee
+                    // return message.from == "support_employee" ||
+                    //   message.from == data.chatTicket[0].assignedTo ? (
+                    //   <ChatMessageFromEmployee
+                    //     key={index}
+                    //     message={message.message}
+                    //     sentAt={formatTimestamp(message.createdAt)}
+                    //   />
+                    // ) : (
+                    //   <ChatMessageFromUser
+                    //     key={index}
+                    //     message={message.message}
+                    //     sentAt={formatTimestamp(message.createdAt)}
+                    //   />
+                    // );
+                    return message.from == userInfo.userId ? (
+                      <ChatMessageFromUser
                         key={index}
                         message={message.message}
                         sentAt={formatTimestamp(message.createdAt)}
                       />
                     ) : (
-                      <ChatMessageFromUser
+                      <ChatMessageFromEmployee
                         key={index}
                         message={message.message}
                         sentAt={formatTimestamp(message.createdAt)}
@@ -326,13 +342,13 @@ const LiveChat = () => {
                 }
               }
               id="input section"
-              p={2}
-              alignItems={"end"}
+              // p={2}
+              // alignItems={"end"}
               px={2}
               size={12}
               // bgcolor={theme.palette.background.paper}
             >
-              <Grid flexGrow={1}>
+              <Grid pb={2} flexGrow={1}>
                 <TextField
                   size="small"
                   fullWidth
@@ -366,15 +382,16 @@ const LiveChat = () => {
               </Grid>
             </Grid>
           </Grid>
+          {userInfo && <ResolveTicket chatTicketID={data.chatTicket[0].id} />}
         </Grid>
       )}
-      (
+
       <AgentScreenViewer
         // stream={stream}
         // remoteVideoRef={remoteVideoRef}
         roomId={currentRoomId}
       />
-      )
+
       {screenShareData && (
         <ScreenShareRequestModal
           open={screenShareRequested}

@@ -4,7 +4,7 @@ import logo from "../../assets/PigoPi.png";
 const ChatMessageFromEmployee = ({ message, sentAt }) => {
   const theme = useTheme();
   return (
-    <Grid container m={1} ml={"auto"}>
+    <Grid size={12} container my={1} ml={"auto"}>
       <Grid
         sx={{
           height: "fit-content",
@@ -41,21 +41,25 @@ const ChatMessageFromEmployee = ({ message, sentAt }) => {
             </Typography>
           </Grid>
         </Grid>
-        <Avatar
-          // sx={{
-          //   bgcolor: theme.palette.primary.light,
-          //   height: "1.5em",
-          //   width: "1.5em",
-          //   fontSize: "1em",
-          // }}
-          src={logo}
-        >
-          {/* <PersonIcon fontSize="small" /> */}
-        </Avatar>
+        <Grid>
+          <Avatar
+            // sx={{
+            //   bgcolor: theme.palette.primary.light,
+            //   height: "1.5em",
+            //   width: "1.5em",
+            //   fontSize: "1em",
+            // }}
+            src={logo}
+          >
+            {/* <PersonIcon fontSize="small" /> */}
+          </Avatar>
+        </Grid>
       </Grid>
-      <Typography mb={0} ml={"auto"} variant="caption">
-        {sentAt}
-      </Typography>
+      <Grid textAlign={"right"} size={12}>
+        <Typography mb={0} variant="caption">
+          {sentAt}
+        </Typography>
+      </Grid>
     </Grid>
   );
 };

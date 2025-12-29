@@ -4,7 +4,7 @@ import PersonIcon from "@mui/icons-material/Person";
 const ChatMessageFromUser = ({ message, sentAt }) => {
   const theme = useTheme();
   return (
-    <Grid container m={1} mr={"auto"}>
+    <Grid size={12} container my={1} mr={"auto"}>
       <Grid
         sx={{
           height: "fit-content",
@@ -55,9 +55,11 @@ const ChatMessageFromUser = ({ message, sentAt }) => {
           </Grid>
         </Grid>
       </Grid>
-      <Typography mb={0} mr={"auto"} variant="caption">
-        {sentAt}
-      </Typography>
+      <Grid size={12}>
+        <Typography mb={0} mr={"auto"} variant="caption">
+          {sentAt}
+        </Typography>
+      </Grid>
     </Grid>
   );
 };

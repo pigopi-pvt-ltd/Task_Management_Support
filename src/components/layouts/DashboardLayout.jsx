@@ -11,13 +11,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import Sidebar from "../Sidebar/Sidebar";
 import Topbar from "../Header/Topbar";
 import axios from "axios";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import CustomSnackbar from "../Snackbar/Snackbar";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   addOnlineUser,
   removeOnlineUser,
+  resetLiveChatRoom,
   setInitialOnlineUsers,
   setRoomMessage,
   setScreenShareData,
@@ -38,7 +39,13 @@ const DashboardLayout = ({ children }) => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
+
+  const { chatRoom } = useSelector(
+    (state) => state.chatSupport.liveChatRoomInfo
+  );
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -172,6 +179,26 @@ const DashboardLayout = ({ children }) => {
         }
       }
     );
+
+    socket.on(
+      "chat-ticket-closed-user_" + currentUserData._id,
+      (chatclosedData) => {
+        console.log("chatcloseData---", chatclosedData);
+        if (chatclosedData.roomId == chatRoom) {
+          dispatch(resetLiveChatRoom());
+          if (window.location.pathname == "/live-chat") {
+            navigate("/my-chats");
+          }
+        }
+        // alert("")
+        // dispatch(
+        //   openSnackbar({
+        //     message: "Your chat session is closed by user.",
+        //     severity: "warning",
+        //   })
+        // );
+      }
+    );
     return () => {
       socket.off("room_and_ticket_created");
       socket.off("receive_new_message");
@@ -179,6 +206,7 @@ const DashboardLayout = ({ children }) => {
       socket.off("user_offline");
       socket.off("screen_share_request" + currentUserData._id);
       socket.off("voice_share_request_" + currentUserData._id);
+      socket.off("chat-ticket-closed-user_" + currentUserData._id);
     };
   }, []);
 

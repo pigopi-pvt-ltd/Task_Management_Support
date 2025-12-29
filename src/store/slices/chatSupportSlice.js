@@ -59,6 +59,13 @@ const chatSupportSlice = createSlice({
     setVoiceShareRequest: (state, action) => {
       state.voiceShareRequested = action.payload.voiceShareRequested;
     },
+    resetLiveChatRoom: (state, action) => {
+      state.liveChatRoomInfo = initialValue.liveChatRoomInfo;
+      state.screenShareData = initialValue.screenShareData;
+      state.screenShareRequested = initialValue.screenShareRequested;
+      state.voiceShareData = initialValue.voiceShareData;
+      state.voiceShareRequested = initialValue.voiceShareRequested;
+    },
   },
 });
 
@@ -74,5 +81,6 @@ export const {
   setScreenShareRequest,
   setvoiceShareData,
   setVoiceShareRequest,
+  resetLiveChatRoom,
 } = chatSupportSlice.actions;
 export default chatSupportSlice;
