@@ -18,13 +18,14 @@ const ChatTicketManagement = () => {
   const [page, setPage] = useState(1);
   const token = localStorage.getItem("token");
   const dispatch = useDispatch();
-  const { data, isError, isLoading } = useGetAllTickets(token, page);
+  const { data, isError, isLoading, isSuccess } = useGetAllTickets(token, page);
 
   const {
     data: employee,
     isError: emplErroor,
     isLoading: employeeLoading,
     error: emperr,
+    isSuccess: employeeSuccess,
   } = useGetAllSupportEmployees(token);
 
   dispatch(
@@ -47,27 +48,27 @@ const ChatTicketManagement = () => {
     // );
     alert("error");
   }
-  // const [rows, setRows] = useState([]);
+  const [myrows, setRows] = useState([]);
   if (data) {
     console.log("data---", data);
   }
   if (emplErroor) {
     console.log("error in employee--", emperr);
   }
-  // useEffect(() => {
-  //   if (data && employee) {
-  //     console.log("data---", data);
-  //     let rows = data.chatTickets.map((ct) => {
-  //       return {
-  //         ...ct,
-  //         issue: ct.ticketType.replaceAll("_", " "),
-  //         isAssigned: ct.isAssigned ? "Agent Name" : "Unassigned",
-  //       };
-  //     });
-  //     setRows(rows);
-  //     console.log(employee);
-  //   }
-  // }, [isLoading, employeeLoading]);
+  useEffect(() => {
+    if (data && employee && isSuccess && employeeSuccess) {
+      console.log("data---", data);
+      let rows = data.chatTickets.map((ct) => {
+        return {
+          ...ct,
+          issue: ct.ticketType.replaceAll("_", " "),
+          isAssigned: ct.isAssigned ? ct.assignedTo.username : "Unassigned",
+        };
+      });
+      setRows(rows);
+      console.log(employee);
+    }
+  }, [isLoading, employeeLoading]);
   let items = [];
   if (employee) {
     console.log(employee);
@@ -78,16 +79,18 @@ const ChatTicketManagement = () => {
       };
     });
   }
-  let rows = [];
-  if (data) {
-    rows = data.chatTickets.map((ct) => {
-      return {
-        ...ct,
-        issue: ct.ticketType.replaceAll("_", " "),
-        isAssigned: ct.isAssigned ? ct.assignedTo.username : "Unassigned",
-      };
-    });
-  }
+  // const [myrows,setRows] = useState([])
+  // let rows = [];
+  // if (data) {
+  //   rows = data.chatTickets.map((ct) => {
+  //     return {
+  //       ...ct,
+  //       issue: ct.ticketType.replaceAll("_", " "),
+  //       isAssigned: ct.isAssigned ? ct.assignedTo.username : "Unassigned",
+  //     };
+  //   });
+  //   // setRows(rows)
+  // }
   const ChatColumns = [
     { field: "issue", headerName: "Issue" },
     { field: "organizationName", headerName: "Organization Name" },
@@ -109,9 +112,8 @@ const ChatTicketManagement = () => {
     { field: "status", headerName: "Status", sortable: false },
     { field: "updatedAt", headerName: "Last Updated", sortable: false },
   ];
-
   return (
-    <>{employee && data && <DataTable cols={ChatColumns} rows={rows} />}</>
+    <>{employee && data && <DataTable cols={ChatColumns} rows={myrows} />}</>
   );
 };
 export default ChatTicketManagement;
