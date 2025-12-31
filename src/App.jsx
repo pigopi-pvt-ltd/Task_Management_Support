@@ -10,7 +10,7 @@ import AllTickets from "./Pages/AllTickets";
 import ChatManagement from "./Pages/ChatManagement";
 import LiveChat from "./components/LiveChat/LiveChat";
 import MyChats from "./Pages/MyChats";
-
+import TicketDetails from "./Pages/TicketDetails";
 function App() {
   const token = getToken();
 
@@ -27,6 +27,7 @@ function App() {
         <Route path="/chat-management" element={<ChatManagement />} />
         <Route path="/live-chat" element={<LiveChat />} />
         <Route path="/my-chats" element={<MyChats />} />
+        <Route path="/ticket/:ticketId" element={<TicketDetails />} />
       </Route>
     </Routes>
   );

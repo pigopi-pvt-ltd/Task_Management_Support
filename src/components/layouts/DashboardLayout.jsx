@@ -287,9 +287,31 @@ const DashboardLayout = ({ children }) => {
               transition: "all 0.3s ease",
             }}
           >
-            <Outlet />
-            <CustomSnackbar />
-          </Box>
+            <Box sx={{ textAlign: "right", p: 1 }}>
+              <IconButton onClick={handleDrawerToggle}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Sidebar mobileOpen={mobileOpen} />
+          </Drawer>
+        </>
+
+        {/* Main Content */}
+        <Box
+          id="page-content"
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 0.5,
+            overflowY: "auto",
+            bgcolor: "#eeeeee",
+            ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0, // shift when sidebar visible
+            transition: "all 0.3s ease",
+            height: "calc(100vh - 64px)", // Set explicit height for scrolling
+          }}
+        >
+          <Outlet />
+          <CustomSnackbar />
         </Box>
       </Box>
       <Loader />
