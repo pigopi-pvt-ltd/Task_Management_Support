@@ -1,4 +1,5 @@
 import { config } from "../../config";
+import axiosInstance from "../utils/axiosInstance";
 
 let backendbaseUrl = config.apiBaseUrl;
 
@@ -182,4 +183,10 @@ export const getChatDataByRoomIdSupport = async (token, roomId) => {
     throw error;
   }
   return await response.json();
+};
+
+export const handlecloseTicket = async (closeTicketData) => {
+  let endpoint = "/chat-tickets/close-chat-support";
+  const { data } = await axiosInstance.put(endpoint, closeTicketData);
+  return data;
 };

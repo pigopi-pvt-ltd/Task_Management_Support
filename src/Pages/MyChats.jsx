@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGetallAssignedChatTickets } from "../services/queries";
 import DenseTable from "../components/DenseTable/DenseTable";
 import { Grid } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoader } from "../store/slices/loaderSlice";
 
 const MyChats = () => {
   const [page, setPage] = useState(1);
   const token = localStorage.getItem("token");
-  const { data, isError, error, isLoading } = useGetallAssignedChatTickets(
-    token,
-    page
-  );
+  const { data, isError, error, isLoading, isSuccess } =
+    useGetallAssignedChatTickets(token, page);
 
   const ChatColumns = [
     // {
@@ -50,15 +50,15 @@ const MyChats = () => {
       numeric: false,
     },
   ];
-
-  let rows = [];
+  const [myRows, setMyRows] = useState([]);
   let id = 0;
   if (isError) {
     console.log("error while getting my chats---", error);
   }
-  if (data) {
-    console.log("my chats---,", data);
 
+  let rows = [];
+  if (data && isSuccess) {
+    console.log("my chats---,", data);
     data.chatTickets.forEach((ct) => {
       let obj = {
         id: id,
@@ -75,7 +75,18 @@ const MyChats = () => {
       rows.push(obj);
     });
     console.log("rows", rows);
+    // setMyRows(rows);
   }
+  // useEffect(() => {
+
+  // }, [data]);
+
+  const dispatch = useDispatch();
+  dispatch(
+    setLoader({
+      loading: isLoading,
+    })
+  );
 
   return (
     <>
@@ -92,7 +103,7 @@ const MyChats = () => {
             tableTitle="My Chats"
             headCells={ChatColumns}
             rows={rows}
-            // fetchedTickets={data.chatTickets}
+            actualRows={data.chatTickets}
           />
         </Grid>
       )}
