@@ -5,6 +5,7 @@ let initialValue = {
     messages: [],
     chatRoom: null,
     userInfo: null,
+    fileData: [],
   },
   screenShareData: null,
   screenShareRequested: false,
@@ -66,6 +67,12 @@ const chatSupportSlice = createSlice({
       state.voiceShareData = initialValue.voiceShareData;
       state.voiceShareRequested = initialValue.voiceShareRequested;
     },
+    setFileHistory: (state, action) => {
+      state.liveChatRoomInfo.fileData = action.payload.fileHistory;
+    },
+    setFileData: (state, action) => {
+      state.liveChatRoomInfo.fileData.push(action.payload.fileData);
+    },
   },
 });
 
@@ -82,5 +89,7 @@ export const {
   setvoiceShareData,
   setVoiceShareRequest,
   resetLiveChatRoom,
+  setFileHistory,
+  setFileData,
 } = chatSupportSlice.actions;
 export default chatSupportSlice;
