@@ -117,11 +117,15 @@ const Users = () => {
     {
       field: "actions",
       headerName: "Actions",
-      flex: 1,
-      align: "center",
-      headerAlign: "center",
+      width: 120,
       renderCell: () => (
-        <Box>
+        <Box
+          sx={{
+            display:"flex",
+            alignItems:"center",
+            height:"100%",
+          }}
+        >
           <IconButton color="primary">
             <EditIcon />
           </IconButton>
