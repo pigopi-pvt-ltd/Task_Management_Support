@@ -67,6 +67,8 @@ const LiveChat = () => {
   const { data: chatHistoryMessages, isLoading: isHistoryLoading } =
     useGetChatHistory(token, currentRoomId, getHistory);
 
+  const chatContainerRef = useRef(null);
+
   // --- Logic ---
   useEffect(() => {
     if (data?.chatTicket?.[0]) {
@@ -93,7 +95,12 @@ const LiveChat = () => {
   }, [chatHistoryMessages, dispatch]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
@@ -127,15 +134,29 @@ const LiveChat = () => {
   return (
     <>
       {data?.chatTicket?.[0] && (
-        <Grid container size={12} spacing={1} p={1} sx={{ height: "85vh" }}>
+        <Box
+          sx={{
+            height: { xs: "90dvh", md: "85vh" },
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            // Important: Main container should only scroll manually,
+            // not triggered by the chat's internal auto-scroll.
+            overflowY: { xs: "auto", md: "hidden" },
+            overflowX: "hidden",
+            bgcolor: "#f4f7f9",
+            p: 1,
+            mt: { xs: 2, md: 0 },
+            gap: 2,
+          }}
+        >
           {/* LEFT: MAIN CHAT WINDOW */}
-          <Grid
-            item
-            size={{ xs: 12, md: 6 }}
+          <Box
             sx={{
-              height: "100%",
+              height: { xs: "100dvh", md: "100%" }, // Take full screen on mobile
+              flex: { xs: "none", md: 6 },
               display: "flex",
               flexDirection: "column",
+              minHeight: 0,
             }}
           >
             <Paper
@@ -147,6 +168,7 @@ const LiveChat = () => {
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
+                bgcolor: "#fff",
               }}
             >
               {/* Chat Header */}
@@ -160,7 +182,14 @@ const LiveChat = () => {
                   bgcolor: "#fff",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    minWidth: 0,
+                  }}
+                >
                   <Badge
                     overlap="circular"
                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -171,8 +200,8 @@ const LiveChat = () => {
                       {data.chatTicket[0].createdByName.charAt(0)}
                     </Avatar>
                   </Badge>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="700">
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="subtitle1" fontWeight="700" noWrap>
                       {data.chatTicket[0].createdByName}
                     </Typography>
                     <Typography
@@ -187,39 +216,19 @@ const LiveChat = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ textAlign: "right" }}>
-                  <Typography
-                    variant="caption"
-                    display="block"
-                    color="text.secondary"
-                    fontWeight="600"
-                  >
-                    TICKET: {data.chatTicket[0].ticketType.replace("_", " ")}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      textTransform: "uppercase",
-                      px: 1,
-                      py: 0.2,
-                      borderRadius: 1,
-                      bgcolor: "#e3f2fd",
-                      color: "#1976d2",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {data.chatTicket[0].status}
-                  </Typography>
-                </Box>
               </Box>
 
-              {/* Messages Area */}
+              {/* Messages Area - SCROLL IS NOW HANDLED VIA REF */}
               <Box
+                ref={chatContainerRef}
                 sx={{
                   flexGrow: 1,
-                  p: 3,
+                  p: { xs: 2, sm: 3 },
                   overflowY: "auto",
                   bgcolor: "#fcfcfc",
+                  display: "flex",
+                  flexDirection: "column",
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {messages.map((message, index) =>
@@ -237,6 +246,7 @@ const LiveChat = () => {
                     />
                   )
                 )}
+                {/* We keep this div as a fallback or for manual markers */}
                 <div ref={messagesEndRef} />
               </Box>
 
@@ -263,7 +273,8 @@ const LiveChat = () => {
                         sx={{
                           bgcolor: theme.palette.primary.main,
                           color: "#fff",
-                          "&:hover": { bgcolor: theme.palette.primary.dark },
+                          width: 40,
+                          height: 40,
                         }}
                       >
                         <SendIcon fontSize="small" />
@@ -274,17 +285,17 @@ const LiveChat = () => {
                 />
               </Box>
             </Paper>
-          </Grid>
+          </Box>
 
-          {/* RIGHT: SIDEBAR */}
-          <Grid
-            item
-            size={{ xs: 12, md: 6 }}
+          {/* RIGHT: SIDEBAR (FULL SCREEN ON MOBILE) */}
+          <Box
             sx={{
-              height: "100%",
+              height: { xs: "100dvh", md: "100%" },
+              flex: { xs: "none", md: 6 },
               display: "flex",
               flexDirection: "column",
               gap: 2,
+              pb: { xs: 4, md: 0 },
             }}
           >
             {userInfo && <ResolveTicket chatTicketID={data.chatTicket[0].id} />}
@@ -300,20 +311,31 @@ const LiveChat = () => {
                 overflow: "hidden",
               }}
             >
-              <Box sx={{ p: 2, borderBottom: "1px solid #f0f0f0" }}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderBottom: "1px solid #f0f0f0",
+                  bgcolor: "#fff",
+                }}
+              >
                 <Typography variant="h6" fontWeight="700">
                   Shared Files
                 </Typography>
               </Box>
 
-              <Box sx={{ p: 2, overflowY: "auto", flexGrow: 1 }}>
+              <Box
+                sx={{
+                  p: 2,
+                  overflowY: "auto",
+                  flexGrow: 1,
+                  bgcolor: "#fcfcfc",
+                }}
+              >
                 {receivedFiles.length === 0 ? (
                   <Box
                     sx={{ textAlign: "center", mt: 4, color: "text.secondary" }}
                   >
-                    <Typography variant="body2">
-                      No files shared in this session.
-                    </Typography>
+                    <Typography variant="body2">No files shared.</Typography>
                   </Box>
                 ) : (
                   receivedFiles.map((file, index) => (
@@ -327,8 +349,6 @@ const LiveChat = () => {
                         borderRadius: 2,
                         border: "1px solid #f0f0f0",
                         bgcolor: "#fff",
-                        transition: "0.2s",
-                        "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)" },
                       }}
                     >
                       <Avatar sx={{ bgcolor: "#e3f2fd", mr: 2 }}>
@@ -342,23 +362,21 @@ const LiveChat = () => {
                           {formatTimestamp(file.createdAt)}
                         </Typography>
                       </Box>
-                      <Tooltip title="Download">
-                        <IconButton
-                          href={file.fileUrl}
-                          download
-                          target="_blank"
-                          size="small"
-                        >
-                          <DownloadIcon fontSize="small" color="primary" />
-                        </IconButton>
-                      </Tooltip>
+                      <IconButton
+                        href={file.fileUrl}
+                        download
+                        target="_blank"
+                        size="small"
+                      >
+                        <DownloadIcon fontSize="small" color="primary" />
+                      </IconButton>
                     </Box>
                   ))
                 )}
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       )}
 
       {/* Modals & Overlay Components */}
@@ -392,28 +410,18 @@ const LiveChat = () => {
           customerName={voiceShareData.username}
           share={"audio"}
           onAccept={() => {
-            console.log("Accepted!");
             socket.emit("voice_share_answer", {
               accepted: true,
               voiceShareData: voiceShareData,
             });
-            dispatch(
-              setVoiceShareRequest({
-                voiceShareRequested: false,
-              })
-            );
+            dispatch(setVoiceShareRequest({ voiceShareRequested: false }));
           }}
           onDecline={() => {
-            console.log("Declined!");
             socket.emit("voice_share_answer", {
               accepted: false,
               voiceShareData: voiceShareData,
             });
-            dispatch(
-              setVoiceShareRequest({
-                voiceShareRequested: false,
-              })
-            );
+            dispatch(setVoiceShareRequest({ voiceShareRequested: false }));
           }}
         />
       )}

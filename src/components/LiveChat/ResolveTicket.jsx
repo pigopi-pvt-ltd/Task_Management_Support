@@ -57,7 +57,8 @@ const ResolveTicket = ({ chatTicketID }) => {
         borderRadius: 4,
         border: "1px solid #e0e0e0",
         bgcolor: "#fff",
-        overflow: "hidden",
+        overflowX: "hidden",
+        // overflowY: "auto",
       }}
     >
       {/* Header */}
