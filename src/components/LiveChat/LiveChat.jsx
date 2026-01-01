@@ -1,110 +1,96 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Grid,
   IconButton,
-  Input,
   TextField,
   Typography,
   useTheme,
+  Paper,
+  Box,
+  Divider,
+  Badge,
+  Tooltip,
 } from "@mui/material";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import SendIcon from "@mui/icons-material/Send";
 import {
-  useGetAssignedTicket,
-  useGetChatDataByRoomIdSupport,
-  useGetChatHistory,
-} from "../../services/queries";
-import { useEffect, useRef, useState } from "react";
-
-import * as socketFunctions from "../../utils/sockets/socketManagement.js";
-// import ChatMessageTo from "./ChatMessageFromEmployee.jsx";
+  AttachFile as AttachFileIcon,
+  Send as SendIcon,
+  CloudDownload as DownloadIcon,
+  FiberManualRecord as FiberManualRecordIcon,
+} from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import {
   initializeMessages,
   setLiveChatRoomInfo,
-  setRoomMessage,
   setScreenShareRequest,
   setVoiceShareRequest,
 } from "../../store/slices/chatSupportSlice.js";
-// import ChatMessageFrom from "./ChatMessageFromUser.jsx";
+import {
+  useGetChatDataByRoomIdSupport,
+  useGetChatHistory,
+} from "../../services/queries";
+import * as socketFunctions from "../../utils/sockets/socketManagement.js";
+
+// Components
 import ChatMessageFromUser from "./ChatMessageFromUser.jsx";
 import ChatMessageFromEmployee from "./ChatMessageFromEmployee.jsx";
-import Peer from "peerjs";
 import AgentScreenViewer from "./AgentScreenViewer.jsx";
 import ScreenShareRequestModal from "./ScreeenShareRequestModal.jsx";
 import ResolveTicket from "./ResolveTicket.jsx";
 
 const LiveChat = () => {
-  // will get assigned ticket
-
   const theme = useTheme();
-  let token = localStorage.getItem("token");
-  let currentRoomId = localStorage.getItem("currentRoomId");
-  const [page, setPage] = useState(1);
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  const currentRoomId = localStorage.getItem("currentRoomId");
+  const messagesEndRef = useRef(null);
 
-  const { messages, chatRoom, userInfo } = useSelector(
-    (state) => state.chatSupport.liveChatRoomInfo
-  );
+  const [messageValue, setMessageValue] = useState("");
+  const [getHistory, setGetHistoryNow] = useState(false);
+
+  const {
+    messages,
+    userInfo,
+    fileData: receivedFiles,
+  } = useSelector((state) => state.chatSupport.liveChatRoomInfo);
   const {
     screenShareRequested,
     screenShareData,
-    voiceShareData,
     voiceShareRequested,
+    voiceShareData,
   } = useSelector((state) => state.chatSupport);
-  const dispatch = useDispatch();
-  const [getHistory, setGetHistoryNow] = useState(false);
-  const { data, isError, error, isLoading, isSuccess } =
-    useGetChatDataByRoomIdSupport(token, currentRoomId);
-  if (data) {
-    console.log("data--ct-----", data);
-  }
-  if (isError) {
-    console.log("err", error);
-  }
-  const {
-    data: chatHistoryMessages,
-    isError: isHistoryError,
-    error: HistoryError,
-    isLoading: isHistoryLoading,
-  } = useGetChatHistory(token, currentRoomId, getHistory);
-  if (isHistoryError) {
-    console.log("history error---", HistoryError);
-  }
+
+  const { data, isLoading, isSuccess } = useGetChatDataByRoomIdSupport(
+    token,
+    currentRoomId
+  );
+  const { data: chatHistoryMessages, isLoading: isHistoryLoading } =
+    useGetChatHistory(token, currentRoomId, getHistory);
+
+  // --- Logic ---
   useEffect(() => {
-    if (data && data.chatTicket[0]) {
-      console.log("data from assigned ticket---", data);
-      if (data.chatTicket[0])
-        dispatch(
-          setLiveChatRoomInfo({
-            chatRoom: data.chatTicket[0].chatRoom,
-            userInfo: {
-              organizationId: data.chatTicket[0].organizationId,
-              branchId: data.chatTicket[0].branchId,
-              userId: data.chatTicket[0].createdBy,
-              username: data.chatTicket[0].createdByName,
-            },
-          })
-        );
-      if (isSuccess) {
-        setGetHistoryNow(true);
-      }
+    if (data?.chatTicket?.[0]) {
+      const ticket = data.chatTicket[0];
+      dispatch(
+        setLiveChatRoomInfo({
+          chatRoom: ticket.chatRoom,
+          userInfo: {
+            organizationId: ticket.organizationId,
+            branchId: ticket.branchId,
+            userId: ticket.createdBy,
+            username: ticket.createdByName,
+          },
+        })
+      );
+      if (isSuccess) setGetHistoryNow(true);
     }
-  }, [isLoading]);
+  }, [data, isSuccess, dispatch]);
 
   useEffect(() => {
     if (chatHistoryMessages) {
-      console.log("fvvfv", chatHistoryMessages);
-      dispatch(
-        initializeMessages({
-          messages: chatHistoryMessages.messages,
-        })
-      );
+      dispatch(initializeMessages({ messages: chatHistoryMessages.messages }));
     }
-  }, [isHistoryLoading]);
-
-  //scrolling code
-
-  const messagesEndRef = useRef(null);
+  }, [chatHistoryMessages, dispatch]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -115,314 +101,291 @@ const LiveChat = () => {
   }, [messages]);
 
   const socket = socketFunctions.getSocket();
-  const handleSendMessage = () => {
-    if (messageValue.trim().length == 0) {
-      return;
-    }
-    let messageData = {
-      organizationId: data.chatTicket[0].organizationId,
-      branchId: data.chatTicket[0].branchId,
-      from: data.chatTicket[0].assignedTo,
-      to: data.chatTicket[0].createdBy,
-      message: messageValue.trim(),
-      chatRoom: data.chatTicket[0].chatRoom,
-      userId: data.chatTicket[0].createdBy,
-    };
-    socket.emit("join_room", {
-      roomId: data.chatTicket[0].chatRoom,
-    });
 
+  const handleSendMessage = () => {
+    if (!messageValue.trim() || !data?.chatTicket?.[0]) return;
+    const ticket = data.chatTicket[0];
+    const messageData = {
+      organizationId: ticket.organizationId,
+      branchId: ticket.branchId,
+      from: ticket.assignedTo,
+      to: ticket.createdBy,
+      message: messageValue.trim(),
+      chatRoom: ticket.chatRoom,
+      userId: ticket.createdBy,
+    };
+    socket.emit("join_room", { roomId: ticket.chatRoom });
     socket.emit("new_message", messageData);
     setMessageValue("");
-    // dispatch(
-    //   setRoomMessage({
-    //     message: messageData,
-    //   })
-    // );
   };
 
-  const [messageValue, setMessageValue] = useState("");
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-
-      console.log("Enter pressed! Sending message...");
-      handleSendMessage();
-    }
-  };
-
-  function formatTimestamp(utcString) {
+  const formatTimestamp = (utcString) => {
     const date = new Date(utcString);
-
-    // 1. Get the day and determine the ordinal suffix (st, nd, rd, th)
-    const day = date.getDate();
-    const getOrdinal = (n) => {
-      const s = ["th", "st", "nd", "rd"];
-      const v = n % 100;
-      return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
-
-    // 2. Format the month, year, and time components
-    const month = date.toLocaleString("en-US", { month: "short" });
-    const year = date.getFullYear();
-
-    // 3. Format the time (3:45 pm)
-    const time = date
-      .toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-      .toLowerCase();
-
-    return `${getOrdinal(day)} ${month}, ${time}`;
-  }
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
     <>
-      {/* {isHistoryLoading} */}
-      {data && data.chatTicket[0] && (
-        <Grid
-          container
-          sx={{
-            height: "fit-content",
-            overflowX: "auto",
-            // height: "100%",
-          }}
-          p={2}
-          spacing={3}
-          size={12}
-          // mb={5}
-          // justifyContent={''}
-          alignItems={"start"}
-        >
+      {data?.chatTicket?.[0] && (
+        <Grid container size={12} spacing={1} p={1} sx={{ height: "85vh" }}>
+          {/* LEFT: MAIN CHAT WINDOW */}
           <Grid
-            boxShadow={3}
-            borderRadius={"0.7rem"}
-            bgcolor={"#faf8fc"}
-            container
-            size={8}
+            item
+            size={{ xs: 12, md: 6 }}
             sx={{
-              // flexDirection: "column",
-              height: "85vh",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <Grid
-              borderBottom={1}
-              borderColor={theme.palette.grey[700]}
-              p={2}
-              size={12}
-              container
-              // mb={3}
-              alignItems={"center"}
-              px={2}
+            <Paper
+              elevation={0}
               sx={{
-                height: "15%",
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
               }}
             >
-              <Grid flexGrow={1}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: "bold",
-                  }}
-                >
-                  User: {data.chatTicket[0].createdByName}
-                </Typography>
-                <Typography variant="subtitle2" color="success">
-                  online
-                </Typography>
-              </Grid>
-              <Grid>
-                <Typography variant="subtitle1">
-                  Issue:{" "}
-                  <span
-                    style={{
-                      fontWeight: "medium",
-                    }}
+              {/* Chat Header */}
+              <Box
+                sx={{
+                  p: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid #f0f0f0",
+                  bgcolor: "#fff",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    variant="dot"
+                    color="success"
                   >
-                    {data.chatTicket[0].ticketType.replaceAll("_", " ")}
-                  </span>
-                </Typography>
-                <Typography variant="subtitle1">
-                  Status:{" "}
-                  <span
-                    style={{
-                      fontWeight: "medium",
+                    <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                      {data.chatTicket[0].createdByName.charAt(0)}
+                    </Avatar>
+                  </Badge>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="700">
+                      {data.chatTicket[0].createdByName}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                    >
+                      <FiberManualRecordIcon
+                        sx={{ fontSize: 10, color: "success.main" }}
+                      />{" "}
+                      Online
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography
+                    variant="caption"
+                    display="block"
+                    color="text.secondary"
+                    fontWeight="600"
+                  >
+                    TICKET: {data.chatTicket[0].ticketType.replace("_", " ")}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      textTransform: "uppercase",
+                      px: 1,
+                      py: 0.2,
+                      borderRadius: 1,
+                      bgcolor: "#e3f2fd",
+                      color: "#1976d2",
+                      fontWeight: "bold",
                     }}
                   >
                     {data.chatTicket[0].status}
-                  </span>
-                </Typography>
-              </Grid>
-            </Grid>
-            <Grid
-              id="chat-window"
-              container
-              size={12}
-              // flexGrow={1}
-              sx={{
-                height: "65%",
+                  </Typography>
+                </Box>
+              </Box>
 
-                overflowY: "scroll",
-                // 1. Define the width of the scrollbar
-                "&::-webkit-scrollbar": {
-                  width: "6px",
-                },
-                // 2. Style the track (the background)
-                "&::-webkit-scrollbar-track": {
-                  backgroundColor: "transparent",
-                },
-                // 3. Style the thumb (the draggable part)
-                "&::-webkit-scrollbar-thumb": {
-                  backgroundColor: theme.palette.grey[600], // Light grey
-                  borderRadius: "10px",
-                },
-                // Optional: Darken on hover
-                "&::-webkit-scrollbar-thumb:hover": {
-                  backgroundColor: "#b0b0b0",
-                },
+              {/* Messages Area */}
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  p: 3,
+                  overflowY: "auto",
+                  bgcolor: "#fcfcfc",
+                }}
+              >
+                {messages.map((message, index) =>
+                  message.from === userInfo?.userId ? (
+                    <ChatMessageFromUser
+                      key={index}
+                      message={message.message}
+                      sentAt={formatTimestamp(message.createdAt)}
+                    />
+                  ) : (
+                    <ChatMessageFromEmployee
+                      key={index}
+                      message={message.message}
+                      sentAt={formatTimestamp(message.createdAt)}
+                    />
+                  )
+                )}
+                <div ref={messagesEndRef} />
+              </Box>
+
+              {/* Input Area */}
+              <Box
+                sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #f0f0f0" }}
+              >
+                <TextField
+                  fullWidth
+                  placeholder="Type a message..."
+                  value={messageValue}
+                  onChange={(e) => setMessageValue(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  InputProps={{
+                    startAdornment: (
+                      <IconButton size="small" sx={{ mr: 1 }}>
+                        <AttachFileIcon />
+                      </IconButton>
+                    ),
+                    endAdornment: (
+                      <IconButton
+                        onClick={handleSendMessage}
+                        disabled={!messageValue.trim()}
+                        sx={{
+                          bgcolor: theme.palette.primary.main,
+                          color: "#fff",
+                          "&:hover": { bgcolor: theme.palette.primary.dark },
+                        }}
+                      >
+                        <SendIcon fontSize="small" />
+                      </IconButton>
+                    ),
+                    sx: { borderRadius: 3, px: 1 },
+                  }}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* RIGHT: SIDEBAR */}
+          <Grid
+            item
+            size={{ xs: 12, md: 6 }}
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+            }}
+          >
+            {userInfo && <ResolveTicket chatTicketID={data.chatTicket[0].id} />}
+
+            <Paper
+              elevation={0}
+              sx={{
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
               }}
             >
-              <Grid
-                sx={{
-                  height: "fit-content",
-                }}
-                size={12}
-                container
-                spacing={1}
-                // m={1}
-                // id="to"
-                // ml={"auto"}
-                p={2}
-              >
-                {userInfo &&
-                  messages.length > 0 &&
-                  messages.map((message, index) => {
-                    // return (
-                    //   <ChatMessageTo key={index} message={message.message} />
-                    // );
-                    // return message.from == "support_employee" ||
-                    //   message.from == data.chatTicket[0].assignedTo ? (
-                    //   <ChatMessageFromEmployee
-                    //     key={index}
-                    //     message={message.message}
-                    //     sentAt={formatTimestamp(message.createdAt)}
-                    //   />
-                    // ) : (
-                    //   <ChatMessageFromUser
-                    //     key={index}
-                    //     message={message.message}
-                    //     sentAt={formatTimestamp(message.createdAt)}
-                    //   />
-                    // );
-                    return message.from == userInfo.userId ? (
-                      <ChatMessageFromUser
-                        key={index}
-                        message={message.message}
-                        sentAt={formatTimestamp(message.createdAt)}
-                      />
-                    ) : (
-                      <ChatMessageFromEmployee
-                        key={index}
-                        message={message.message}
-                        sentAt={formatTimestamp(message.createdAt)}
-                      />
-                    );
-                  })}
-                <div ref={messagesEndRef} />
-              </Grid>
-            </Grid>
-            <Grid
-              container
-              sx={
-                {
-                  // height: "15%",
-                }
-              }
-              id="input section"
-              // p={2}
-              // alignItems={"end"}
-              px={2}
-              size={12}
-              // bgcolor={theme.palette.background.paper}
-            >
-              <Grid pb={2} flexGrow={1}>
-                <TextField
-                  size="small"
-                  fullWidth
-                  color="primary"
-                  placeholder="Message Customer..."
-                  variant="outlined"
-                  sx={{
-                    // border: 0.5,
-                    borderRadius: "1.5 rem",
-                  }}
-                  value={messageValue}
-                  onChange={(e) => {
-                    setMessageValue(e.target.value);
-                  }}
-                  onKeyDown={handleKeyDown}
-                />
-              </Grid>
-              <Grid container spacing={1}>
-                <IconButton>
-                  <AttachFileIcon />
-                </IconButton>
-                <Avatar
-                  sx={{
-                    bgcolor: theme.palette.primary.light,
-                    cursor: "pointer",
-                  }}
-                  onClick={handleSendMessage}
-                >
-                  <SendIcon size={"medium"} />
-                </Avatar>
-              </Grid>
-            </Grid>
+              <Box sx={{ p: 2, borderBottom: "1px solid #f0f0f0" }}>
+                <Typography variant="h6" fontWeight="700">
+                  Shared Files
+                </Typography>
+              </Box>
+
+              <Box sx={{ p: 2, overflowY: "auto", flexGrow: 1 }}>
+                {receivedFiles.length === 0 ? (
+                  <Box
+                    sx={{ textAlign: "center", mt: 4, color: "text.secondary" }}
+                  >
+                    <Typography variant="body2">
+                      No files shared in this session.
+                    </Typography>
+                  </Box>
+                ) : (
+                  receivedFiles.map((file, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1.5,
+                        mb: 1.5,
+                        borderRadius: 2,
+                        border: "1px solid #f0f0f0",
+                        bgcolor: "#fff",
+                        transition: "0.2s",
+                        "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)" },
+                      }}
+                    >
+                      <Avatar sx={{ bgcolor: "#e3f2fd", mr: 2 }}>
+                        <AttachFileIcon sx={{ color: "#1976d2" }} />
+                      </Avatar>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography variant="body2" fontWeight="600" noWrap>
+                          {file.fileName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatTimestamp(file.createdAt)}
+                        </Typography>
+                      </Box>
+                      <Tooltip title="Download">
+                        <IconButton
+                          href={file.fileUrl}
+                          download
+                          target="_blank"
+                          size="small"
+                        >
+                          <DownloadIcon fontSize="small" color="primary" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ))
+                )}
+              </Box>
+            </Paper>
           </Grid>
-          {userInfo && <ResolveTicket chatTicketID={data.chatTicket[0].id} />}
         </Grid>
       )}
 
-      <AgentScreenViewer
-        // stream={stream}
-        // remoteVideoRef={remoteVideoRef}
-        roomId={currentRoomId}
-      />
+      {/* Modals & Overlay Components */}
+      <AgentScreenViewer roomId={currentRoomId} />
 
       {screenShareData && (
         <ScreenShareRequestModal
           open={screenShareRequested}
-          share={"screen"}
+          share="screen"
           customerName={screenShareData.username}
           onAccept={() => {
-            console.log("Accepted!");
             socket.emit("screen_share_answer", {
               accepted: true,
-              screenShareData: screenShareData,
+              screenShareData,
             });
-            dispatch(
-              setScreenShareRequest({
-                screenShareRequested: false,
-              })
-            );
+            dispatch(setScreenShareRequest({ screenShareRequested: false }));
           }}
           onDecline={() => {
-            console.log("Declined!");
             socket.emit("screen_share_answer", {
               accepted: false,
-              screenShareData: screenShareData,
+              screenShareData,
             });
-            dispatch(
-              setScreenShareRequest({
-                screenShareRequested: false,
-              })
-            );
+            dispatch(setScreenShareRequest({ screenShareRequested: false }));
           }}
         />
       )}
+
       {voiceShareData && (
         <ScreenShareRequestModal
           open={voiceShareRequested}

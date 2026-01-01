@@ -19,6 +19,8 @@ import {
   addOnlineUser,
   removeOnlineUser,
   resetLiveChatRoom,
+  setFileData,
+  setFileHistory,
   setInitialOnlineUsers,
   setRoomMessage,
   setScreenShareData,
@@ -199,6 +201,26 @@ const DashboardLayout = ({ children }) => {
         // );
       }
     );
+
+    socket.on("receive_file_link", (fileData) => {
+      console.log("fileData---", fileData);
+      dispatch(
+        setFileData({
+          fileData: fileData,
+        })
+      );
+    });
+
+    // Listener for history (when joining late)
+    socket.on("file_history", (historyData) => {
+      // historyData is an array of documents from MongoDB
+      console.log("history--data--", historyData);
+      dispatch(
+        setFileHistory({
+          fileHistory: historyData,
+        })
+      );
+    });
     return () => {
       socket.off("room_and_ticket_created");
       socket.off("receive_new_message");
@@ -207,6 +229,8 @@ const DashboardLayout = ({ children }) => {
       socket.off("screen_share_request" + currentUserData._id);
       socket.off("voice_share_request_" + currentUserData._id);
       socket.off("chat-ticket-closed-user_" + currentUserData._id);
+      socket.off("receive_file_link");
+      socket.off("file_history");
     };
   }, []);
 
