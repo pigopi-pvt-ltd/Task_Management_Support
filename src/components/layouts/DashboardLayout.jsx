@@ -239,108 +239,82 @@ const DashboardLayout = ({ children }) => {
   }, []);
 
   return (
-    <>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-      >
-        <CssBaseline />
+  <>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <CssBaseline />
 
-        {/* CHANGE #1: Topbar full width, always on top */}
-        <Topbar
-          handleDrawerToggle={handleDrawerToggle}
-          username={username}
-          branchName={selectedBranch}
-        />
+      {/* Topbar */}
+      <Topbar
+        handleDrawerToggle={handleDrawerToggle}
+        username={username}
+        branchName={selectedBranch}
+      />
 
-        <Box sx={{ display: "flex", flexGrow: 1 }}>
-          <>
-            {/* Desktop Sidebar */}
-            <Drawer
-              variant="permanent"
-              sx={{
-                display: { xs: "none", md: "block" },
-                "& .MuiDrawer-paper": {
-                  width: drawerWidth,
-                  top: "64px",
-                  height: "calc(100% - 64px)",
-                  borderRadius: 0,
-                  display: isFullscreen ? "none" : "block",
-                },
-              }}
-              open
-            >
-              <Sidebar mobileOpen={mobileOpen} />
-            </Drawer>
+      <Box sx={{ display: "flex", flexGrow: 1 }}>
+        {/* Desktop Sidebar */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: "none", md: "block" },
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              top: "64px",
+              height: "calc(100% - 64px)",
+              display: isFullscreen ? "none" : "block",
+            },
+          }}
+          open
+        >
+          <Sidebar />
+        </Drawer>
 
-            {/* Mobile Sidebar */}
-            <Drawer
-              variant="temporary"
-              open={mobileOpen}
-              onClose={handleDrawerToggle}
-              ModalProps={{ keepMounted: true }}
-              TransitionComponent={Slide}
-              transitionDuration={{ enter: 500, exit: 500 }}
-              sx={{
-                display: { xs: "block", md: "none" },
-                "& .MuiDrawer-paper": {
-                  width: drawerWidth,
-                  borderRadius: 0,
-                  display: isFullscreen ? "none" : "block",
-                },
-              }}
-            >
-              <Box sx={{ textAlign: "right", p: 1 }}>
-                <IconButton onClick={handleDrawerToggle}>
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-              <Sidebar mobileOpen={mobileOpen} />
-            </Drawer>
-          </>
-
-          {/* Main Content */}
-          <Box
-            id="page-content"
-            component="main"
-            sx={{
-              flexGrow: 1,
-              p: 0.5,
-              overflowY: "auto",
-              bgcolor: "#eeeeee",
-              ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0, // shift when sidebar visible
-              transition: "all 0.3s ease",
-            }}
-          >
-            <Box sx={{ textAlign: "right", p: 1 }}>
-              <IconButton onClick={handleDrawerToggle}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Sidebar mobileOpen={mobileOpen} />
-          </Drawer>
-        </>
+        {/* Mobile Sidebar */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          TransitionComponent={Slide}
+          transitionDuration={{ enter: 500, exit: 500 }}
+          sx={{
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              display: isFullscreen ? "none" : "block",
+            },
+          }}
+        >
+          <Box sx={{ textAlign: "right", p: 1 }}>
+            <IconButton onClick={handleDrawerToggle}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Sidebar />
+        </Drawer>
 
         {/* Main Content */}
         <Box
-          id="page-content"
           component="main"
           sx={{
             flexGrow: 1,
-            p: 0.5,
+            p: 1,
             overflowY: "auto",
             bgcolor: "#eeeeee",
-            ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0, // shift when sidebar visible
+            ml: !isFullscreen ? { md: `${drawerWidth}px` } : 0,
             transition: "all 0.3s ease",
-            height: "calc(100vh - 64px)", // Set explicit height for scrolling
+            height: "calc(100vh - 64px)",
           }}
         >
           <Outlet />
           <CustomSnackbar />
         </Box>
       </Box>
-      <Loader />
-    </>
-  );
+    </Box>
+
+    <Loader />
+  </>
+);
+
 };
 
 export default DashboardLayout;
