@@ -114,7 +114,13 @@ const AllTickets = () => {
       align: "center",
       renderCell: (params) => (
         <Typography
-          onClick={() => navigate(`/ticket/${params.row.id}`)}
+          onClick={() => {
+            if (params.row.status === "resolved") {
+              navigate(`/ticket/resolved/${params.row.id}`);
+            } else {
+              navigate(`/ticket/${params.row.id}`);
+            }
+          }}
           sx={{
             cursor: "pointer",
             color: "#1976d2",

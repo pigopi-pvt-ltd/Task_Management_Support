@@ -11,6 +11,7 @@ import ChatManagement from "./Pages/ChatManagement";
 import LiveChat from "./components/LiveChat/LiveChat";
 import MyChats from "./Pages/MyChats";
 import TicketDetails from "./Pages/TicketDetails";
+import Resolved from "./components/TicketDetails/Statuss/Resolved";
 function App() {
   const token = getToken();
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/live-chat" element={<LiveChat />} />
         <Route path="/my-chats" element={<MyChats />} />
         <Route path="/ticket/:ticketId" element={<TicketDetails />} />
+        <Route path="/ticket/resolved/:ticketId" element={<Resolved />} />
       </Route>
     </Routes>
   );
