@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { joinRoomClicked } from "../../store/slices/chatSupportSlice";
 import { useNavigate } from "react-router";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 // const rows = [
 //   createData(1, "Cupcake", 305, 3.7, 67, 4.3),
@@ -207,7 +208,7 @@ export default function DenseTable({ headCells, rows, actualRows, ...props }) {
   const { onlineUsers } = useSelector((state) => state.chatSupport);
 
   console.log("onlineUsers--", onlineUsers);
-
+  const queryClient = useQueryClient();
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -269,7 +270,7 @@ export default function DenseTable({ headCells, rows, actualRows, ...props }) {
   const dispach = useDispatch();
   const navigate = useNavigate();
   const socket = socketFunctions.getSocket();
-  const handleStartChatting = (roomId) => {
+  const handleStartChatting = async (roomId) => {
     console.log("roomid---", roomId);
     dispach(
       joinRoomClicked({
@@ -281,7 +282,12 @@ export default function DenseTable({ headCells, rows, actualRows, ...props }) {
     socket.emit("join_room", {
       roomId: roomId,
     });
-
+    await queryClient.invalidateQueries({
+      queryKey: ["chat-data"],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["chat-history"],
+    });
     navigate("/live-chat");
   };
 
