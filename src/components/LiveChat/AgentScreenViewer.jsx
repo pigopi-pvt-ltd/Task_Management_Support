@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -14,6 +14,17 @@ import { config } from "../../../config";
 import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 // const host = import.meta.env.HOST_DEV;
 // const port =  import.meta.env.PORT
+
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
 
 const AgentScreenViewer = ({ roomId }) => {
   const [open, setOpen] = useState(false);
@@ -36,6 +47,12 @@ const AgentScreenViewer = ({ roomId }) => {
     setControlStatus("requesting");
     socket.emit("request_control", { roomId });
   };
+  const throttledMouseMove = useCallback(
+    throttle((data) => {
+      socket.emit("remote_input_send", { roomId, eventData: data });
+    }, 50),
+    [roomId, socket]
+  );
 
   const handleVideoClick = (e) => {
     // Only send events if the user accepted control
@@ -67,14 +84,7 @@ const AgentScreenViewer = ({ roomId }) => {
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
 
-    socket.emit("remote_input_send", {
-      roomId,
-      eventData: {
-        type: "mousemove",
-        x: x,
-        y: y,
-      },
-    });
+    throttledMouseMove({ type: "mousemove", x, y });
   };
 
   useEffect(() => {
@@ -288,7 +298,12 @@ const AgentScreenViewer = ({ roomId }) => {
               onClick={handleVideoClick}
               onMouseMove={handleMouseMove}
               playsInline
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                cursor: controlStatus === "active" ? "crosshair" : "default", // Add this
+              }}
               muted
             />
           </Box>
