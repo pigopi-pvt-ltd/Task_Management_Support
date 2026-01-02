@@ -37,6 +37,7 @@ import ChatMessageFromEmployee from "./ChatMessageFromEmployee.jsx";
 import AgentScreenViewer from "./AgentScreenViewer.jsx";
 import ScreenShareRequestModal from "./ScreeenShareRequestModal.jsx";
 import ResolveTicket from "./ResolveTicket.jsx";
+import { setLoader } from "../../store/slices/loaderSlice.js";
 
 const LiveChat = () => {
   const theme = useTheme();
@@ -84,15 +85,16 @@ const LiveChat = () => {
           },
         })
       );
+      socket.emit("join_room", { roomId: ticket.chatRoom });
       if (isSuccess) setGetHistoryNow(true);
     }
-  }, [data, isSuccess, dispatch]);
+  }, [data, isSuccess]);
 
   useEffect(() => {
     if (chatHistoryMessages) {
       dispatch(initializeMessages({ messages: chatHistoryMessages.messages }));
     }
-  }, [chatHistoryMessages, dispatch]);
+  }, [chatHistoryMessages]);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -130,6 +132,12 @@ const LiveChat = () => {
     const date = new Date(utcString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  dispatch(
+    setLoader({
+      loading: isLoading || isHistoryLoading,
+    })
+  );
 
   return (
     <>

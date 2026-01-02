@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,9 +11,20 @@ import CloseIcon from "@mui/icons-material/Close";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import Peer from "peerjs";
 import { config } from "../../../config";
-
+import * as socketFunctions from "../../utils/sockets/socketManagement.js";
 // const host = import.meta.env.HOST_DEV;
 // const port =  import.meta.env.PORT
+
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+};
 
 const AgentScreenViewer = ({ roomId }) => {
   const [open, setOpen] = useState(false);
@@ -26,6 +37,55 @@ const AgentScreenViewer = ({ roomId }) => {
   const [stream, setStream] = useState(null);
 
   const peerInstance = useRef(null); // Keep track of the peer instance
+
+  // const [isControlActive, setIsControlActive] = useState(false);
+  const socket = socketFunctions.getSocket(); // Get existing socket instance
+
+  const [controlStatus, setControlStatus] = useState("idle");
+
+  const handleRequestControl = () => {
+    setControlStatus("requesting");
+    socket.emit("request_control", { roomId });
+  };
+  const throttledMouseMove = useCallback(
+    throttle((data) => {
+      socket.emit("remote_input_send", { roomId, eventData: data });
+    }, 50),
+    [roomId, socket]
+  );
+
+  const handleVideoClick = (e) => {
+    // Only send events if the user accepted control
+    if (controlStatus !== "active" || !remoteVideoRef.current) return;
+
+    // 1. Get the bounding box of the video element
+    const rect = remoteVideoRef.current.getBoundingClientRect();
+
+    // 2. Calculate the click position as a percentage (0 to 1)
+    // This ensures accuracy even if the agent's screen is a different size than the user's
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    // 3. Emit the event data to the server (which relays it to the user)
+    socket.emit("remote_input_send", {
+      roomId,
+      eventData: {
+        type: "click",
+        x: x,
+        y: y,
+      },
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (controlStatus !== "active" || !remoteVideoRef.current) return;
+
+    const rect = remoteVideoRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    throttledMouseMove({ type: "mousemove", x, y });
+  };
 
   useEffect(() => {
     if (!roomId || peerInstance.current) return;
@@ -116,6 +176,31 @@ const AgentScreenViewer = ({ roomId }) => {
     };
   }, [roomId]);
 
+  const stopControl = () => {
+    setControlStatus("idle");
+    // Tell the server to tell the user we are done
+    socket.emit("stop_control", { roomId });
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("control_response_from_user", ({ accepted }) => {
+      console.log("accepted---", accepted);
+      if (accepted) {
+        setControlStatus("active");
+      } else {
+        setControlStatus("idle");
+        alert("User denied the control request.");
+      }
+    });
+
+    // Cleanup listeners
+    return () => {
+      socket.off("control_response_from_user");
+    };
+  }, [socket]);
+
   const handleClose = () => {
     setOpen(false);
     // Optionally stop the stream playback
@@ -139,6 +224,53 @@ const AgentScreenViewer = ({ roomId }) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Customer Screen Share
           </Typography>
+
+          <Box sx={{ mr: 2 }}>
+            {controlStatus === "idle" && (
+              <button
+                onClick={handleRequestControl}
+                style={{
+                  background: "#1976d2",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 15px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                Take Control
+              </button>
+            )}
+            {controlStatus === "requesting" && (
+              <button
+                disabled
+                style={{
+                  background: "#ffa000",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 15px",
+                  borderRadius: "5px",
+                }}
+              >
+                Waiting for Consent...
+              </button>
+            )}
+            {controlStatus === "active" && (
+              <button
+                onClick={stopControl}
+                style={{
+                  background: "#d32f2f",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 15px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                Stop Control
+              </button>
+            )}
+          </Box>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
@@ -163,8 +295,15 @@ const AgentScreenViewer = ({ roomId }) => {
                 remoteVideoRef.current = node;
               }}
               autoPlay
+              onClick={handleVideoClick}
+              onMouseMove={handleMouseMove}
               playsInline
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                cursor: controlStatus === "active" ? "crosshair" : "default", // Add this
+              }}
               muted
             />
           </Box>

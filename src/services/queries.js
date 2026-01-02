@@ -86,7 +86,7 @@ export const useGetallAssignedChatTickets = (token, page) => {
 export const useGetChatDataByRoomIdSupport = (token, roomId) => {
   return useQuery({
     queryKey: [
-      "chat-history",
+      "chat-data",
       {
         token: token,
         roomId: roomId,
