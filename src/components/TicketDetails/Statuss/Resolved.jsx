@@ -8,7 +8,9 @@ import {
   Chip,
   Button,
   IconButton,
+  Divider,
 } from "@mui/material";
+import CommentIcon from "@mui/icons-material/Comment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import GetAppIcon from "@mui/icons-material/GetApp";
@@ -58,7 +60,10 @@ const WorkflowStep = ({ name, role, status, time, highlight }) => (
         {status} : {time}
       </Typography>
 
-      <Box display="flex" alignItems="center" mt={1} sx={{ cursor: "pointer" }}>
+      <Divider sx={{ my: 1.5 }} />
+
+      <Box display="flex" alignItems="center" sx={{ cursor: "pointer" }}>
+        <CommentIcon fontSize="small" sx={{ mr: 0.5, color: '#666' }}/>
         <Typography sx={{ fontSize: 12, fontWeight: "bold", mr: 0.5 }}>
           Comments
         </Typography>
@@ -75,8 +80,8 @@ const Resolved = () => {
       {/* ================= HEADER ================= */}
       <Card sx={{ mb: 2, boxShadow: "0px 1px 3px rgba(0,0,0,0.15)" }}>
         <CardContent>
-          <Grid container spacing={2} justifyContent="space-between">
-            <Grid item xs={12} md={9}>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
+            <Box sx={{ width: { xs: "100%", md: "70%" } }}>
               <Box display="flex" alignItems="center" gap={1}>
                 <Chip
                   label="Resolved"
@@ -115,25 +120,30 @@ const Resolved = () => {
               >
                 Back
               </Button>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={4}>
+            <Box sx={{ width: { xs: "100%", md: "30%" } }}>
               <Box
                 sx={{
                   border: "1px solid #e0e0e0",
                   p: 2,
                   textAlign: "center",
+                  height: "70%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1
                 }}
               >
                 <Typography fontWeight="bold" fontSize={13}>
-                  Customer SLA
+                  Customer SLA:
                 </Typography>
                 <Typography fontWeight="bold" fontSize={14}>
                   05/11/2025 9:49 AM
                 </Typography>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
