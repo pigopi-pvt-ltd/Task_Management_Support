@@ -38,6 +38,7 @@ import AgentScreenViewer from "./AgentScreenViewer.jsx";
 import ScreenShareRequestModal from "./ScreeenShareRequestModal.jsx";
 import ResolveTicket from "./ResolveTicket.jsx";
 import { setLoader } from "../../store/slices/loaderSlice.js";
+import { getCurrentUserData } from "../../utils/auth.js";
 
 const LiveChat = () => {
   const theme = useTheme();
@@ -53,6 +54,7 @@ const LiveChat = () => {
     messages,
     userInfo,
     fileData: receivedFiles,
+    chatRoom,
   } = useSelector((state) => state.chatSupport.liveChatRoomInfo);
   const {
     screenShareRequested,
@@ -110,6 +112,29 @@ const LiveChat = () => {
   }, [messages]);
 
   const socket = socketFunctions.getSocket();
+
+  const fileInputRef = useRef(null);
+  const currentUserData = getCurrentUserData();
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      socket.emit("upload_file", {
+        room: chatRoom,
+        file: reader.result,
+        fileName: file.name,
+        fileType: file.type,
+        senderId: currentUserData._id,
+        recieverId: userInfo.userId,
+      });
+      // dispatch(openSnackbar({ message: "File sent!", severity: "success" }));
+      alert("file sent");
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = "";
+  };
 
   const handleSendMessage = () => {
     if (!messageValue.trim() || !data?.chatTicket?.[0]) return;
@@ -262,6 +287,12 @@ const LiveChat = () => {
               <Box
                 sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #f0f0f0" }}
               >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileUpload}
+                />
                 <TextField
                   fullWidth
                   placeholder="Type a message..."
@@ -270,7 +301,11 @@ const LiveChat = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                   InputProps={{
                     startAdornment: (
-                      <IconButton size="small" sx={{ mr: 1 }}>
+                      <IconButton
+                        onClick={() => fileInputRef.current.click()}
+                        size="small"
+                        sx={{ mr: 1 }}
+                      >
                         <AttachFileIcon />
                       </IconButton>
                     ),
@@ -388,7 +423,8 @@ const LiveChat = () => {
       )}
 
       {/* Modals & Overlay Components */}
-      <AgentScreenViewer roomId={currentRoomId} />
+
+      <AgentScreenViewer roomId={chatRoom} />
 
       {screenShareData && (
         <ScreenShareRequestModal

@@ -87,7 +87,7 @@ const DashboardLayout = ({ children }) => {
   const currentUserData = getCurrentUserData();
 
   useEffect(() => {
-    socket.on("room_and_ticket_created", (ticketData) => {
+    socket.on("room_and_ticket_created", async (ticketData) => {
       console.log("ticket data---", ticketData);
       // dispatch(
       //   openSnackbar({
@@ -95,8 +95,9 @@ const DashboardLayout = ({ children }) => {
       //     severity: "info",
       //   })
       // );
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["chat-tickets"],
+        refetchType: "all",
       });
       alert("New Chat Ticket created By a User");
     });
@@ -184,10 +185,18 @@ const DashboardLayout = ({ children }) => {
 
     socket.on(
       "chat-ticket-closed-user_" + currentUserData._id,
-      (chatclosedData) => {
+      async (chatclosedData) => {
         console.log("chatcloseData---", chatclosedData);
         if (chatclosedData.roomId == chatRoom) {
           dispatch(resetLiveChatRoom());
+          await queryClient.invalidateQueries({
+            queryKey: ["chat-tickets"],
+            refetchType: "all",
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ["chat-tickets"],
+            refetchType: "all",
+          });
           if (window.location.pathname == "/live-chat") {
             navigate("/my-chats");
           }
