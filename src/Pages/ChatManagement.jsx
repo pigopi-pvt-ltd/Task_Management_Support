@@ -48,27 +48,28 @@ const ChatTicketManagement = () => {
     // );
     alert("error");
   }
-  const [myrows, setRows] = useState([]);
+  // const [myrows, setRows] = useState([]);
   if (data) {
     console.log("data---", data);
   }
   if (emplErroor) {
     console.log("error in employee--", emperr);
   }
-  useEffect(() => {
-    if (data && employee && isSuccess && employeeSuccess) {
-      console.log("data---", data);
-      let rows = data.chatTickets.map((ct) => {
-        return {
-          ...ct,
-          issue: ct.ticketType.replaceAll("_", " "),
-          isAssigned: ct.isAssigned ? ct.assignedTo.username : "Unassigned",
-        };
-      });
-      setRows(rows);
-      console.log(employee);
-    }
-  }, [isLoading, employeeLoading]);
+  let rows = [];
+  if (data && isSuccess) {
+    console.log("data---", data);
+    rows = data.chatTickets.map((ct) => {
+      return {
+        ...ct,
+        issue: ct.ticketType.replaceAll("_", " "),
+        isAssigned: ct.isAssigned ? ct.assignedTo.username : "Unassigned",
+      };
+    });
+    console.log("myrows---", rows);
+    // setRows(rows);
+    console.log(employee);
+  }
+
   let items = [];
   if (employee) {
     console.log(employee);
@@ -113,7 +114,7 @@ const ChatTicketManagement = () => {
     { field: "updatedAt", headerName: "Last Updated", sortable: false },
   ];
   return (
-    <>{employee && data && <DataTable cols={ChatColumns} rows={myrows} />}</>
+    <>{employee && data && <DataTable cols={ChatColumns} rows={rows} />}</>
   );
 };
 export default ChatTicketManagement;
